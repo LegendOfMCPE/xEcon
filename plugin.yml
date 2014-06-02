@@ -1,0 +1,12 @@
+name: xEcon beta
+author: LegendOfMCPE
+main: xecon\Main
+load: POSTWORLD
+api:
+- 1.0.0
+version: 0.0
+commands:
+  xecon:
+    description: xEcon main command
+    usage: "/xecon <help>"
+    aliases: [xe, xec]
