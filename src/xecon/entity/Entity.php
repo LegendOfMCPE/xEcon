@@ -45,7 +45,7 @@ abstract class Entity{
 	protected function getFolderByName($name){
 		return Main::get()->getEntDir().$this->getType()->getAbsolutePrefix().$name;
 	}
-	protected function addAccount($name, $defaultAmount, $maxContainable = 1000){
+	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX){
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this, $this->getInventory($name));
 		$this->accounts[$name]->setMaxContainable($maxContainable);
 	}
