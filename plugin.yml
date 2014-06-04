@@ -4,3 +4,6 @@ version: 1
 api: [1.0.0]
 load: STARTUP
 main: xecon\Main
+commands:
+  xecon:
+    description: xEcon main command
