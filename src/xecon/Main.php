@@ -7,19 +7,21 @@ use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use xecon\commands\MyCommandMap;
-use xecon\utils\FolderDatabase;
 
 class Main extends PluginBase implements Listener{
-	/** @var  string directory where economic entity information is stored` */
+	/** @var string directory where economic entity information is stored` */
 	private $edir;
 	/** @var Session[] $sessions */
 	private $sessions = [];
 	/** @var Config */
 	private $userConfig;
+	/** @var MyCommandMap */
+	private $subcommandMap;
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -29,7 +31,7 @@ class Main extends PluginBase implements Listener{
 			"player-default-cash-money" => 100,
 			"player-max-cash-money" => 1000,
 		]);
-		$this->subcmds = new MyCommandMap;
+		$this->subcommandMap= new MyCommandMap;
 		// add register commands
 	}
 	public function getDefaultBankMoney(){
@@ -52,28 +54,17 @@ class Main extends PluginBase implements Listener{
 		return $this->edir;
 	}
 	public function onJoin(PlayerJoinEvent $evt){
-		$this->sessions[$evt->getPlayer()->CID] = new Session($evt->getPlayer());
+		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer());
 	}
 	public function onQuit(PlayerQuitEvent $evt){
 		$p = $evt->getPlayer();
-		if(isset($this->sessions[$p->CID])){
-			$this->sessions[$p->CID]->onQuit();
-			unset($this->sessions[$p->CID]);
+		if(isset($this->sessions[$this->CID($p)])){
+			$this->sessions[$this->CID($p)]->onQuit();
+			unset($this->sessions[$this->CID($p)]);
 		}
 	}
 	public function onCommand(CommandSender $sender, Command $cmd, $l, array $args){
-		$output = "";
-		$wrongUse = false;
-		switch($cmd){
-			case "xecon":
-
-				break;
-		}
-		if($wrongUse){
-			return false;
-		}
-		$sender->sendMessage($output);
-		return true;
+		return $this->subcommandMap->run($sender, $args);
 	}
 	public function getUserConfig(){
 		return $this->userConfig;
@@ -83,5 +74,8 @@ class Main extends PluginBase implements Listener{
 	 */
 	public static function get(){
 		return Server::getInstance()->getPluginManager()->getPlugin("xEcon");
+	}
+	public static function CID(Player $player){
+		return $player->getID();
 	}
 }

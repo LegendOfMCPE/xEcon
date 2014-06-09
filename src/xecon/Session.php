@@ -9,4 +9,7 @@ class Session{
 	public function __construct(Player $player){
 		$this->ent = new PlayerEnt($player);
 	}
+	public function onQuit(){
+
+	}
 }
