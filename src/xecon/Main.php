@@ -12,6 +12,8 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use xecon\commands\MyCommandMap;
+use xecon\commands\SetMoneySubcommand;
+use xecon\commands\SetPlayerMoneySubcommand;
 
 class Main extends PluginBase implements Listener{
 	/** @var string directory where economic entity information is stored` */
@@ -25,14 +27,15 @@ class Main extends PluginBase implements Listener{
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-		$this->userConfig = new Config($this->getDataFolder()."config.properties", Config::PROPERTIES, [
+		$this->userConfig = new Config($this->getDataFolder()."config.yml", Config::YAML, [ // If I shifted my right hand one key leftwards on the QWERTY keyboard, YAML would become TANK
 			"player-default-bank-money" => 500,
 			"player-bank-max-money" => 100000,
 			"player-default-cash-money" => 100,
 			"player-max-cash-money" => 1000,
 		]);
-		$this->subcommandMap= new MyCommandMap;
-		// add register commands
+		$this->subcommandMap = new MyCommandMap;
+		$this->subcommandMap->register(new SetMoneySubcommand);
+		$this->subcommandMap->register(new SetPlayerMoneySubcommand);
 	}
 	public function getDefaultBankMoney(){
 		return $this->userConfig->get("player-default-bank-money");
@@ -68,6 +71,9 @@ class Main extends PluginBase implements Listener{
 	}
 	public function getUserConfig(){
 		return $this->userConfig;
+	}
+	public function getSessions(){
+		return $this->sessions;
 	}
 	/**
 	 * @return self

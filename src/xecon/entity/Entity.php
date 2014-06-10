@@ -8,13 +8,10 @@ use xecon\Main;
 abstract class Entity{
 	/** @var string */
 	private $folder;
-	/** @var EntityType  */
-	private $type;
 	/** @var Account[] */
 	protected $accounts = [];
-	protected function __construct($folder, EntityType $type){
+	protected function __construct($folder){
 		$this->folder = $folder;
-		$this->type = $type;
 		if(!is_dir($folder)){
 			$this->initAsDefault();
 		}
@@ -30,20 +27,17 @@ abstract class Entity{
 		}
 	}
 	private function initAsDefault(){
-		$this->initAccounts();
+		$this->initDefaultAccounts();
 	}
 	protected abstract function initDefaultAccounts();
 	public function getInventory($account){
-		return null;
+		return $this->accounts[$account]->getInventory();
 	}
 	public function getFolder(){
 		return $this->folder;
 	}
-	public function getType(){
-		return $this->type;
-	}
 	protected function getFolderByName($name){
-		return Main::get()->getEntDir().$this->getType()->getAbsolutePrefix().$name;
+		return Main::get()->getEntDir().$this->getAbsolutePrefix().$name;
 	}
 	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX){
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this, $this->getInventory($name));

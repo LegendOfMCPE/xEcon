@@ -12,7 +12,7 @@ class MyCommandMap{
 	 */
 	protected $cmds;
 	public function register(Subcommand $cmd){
-		$this->cmds[strtolower($cmd->getName())] = $cmd;
+		$this->cmds[trim(strtolower($cmd->getName()))] = $cmd;
 	}
 	public function run(CommandSender $sender, array $args){
 		$showHelp = true;

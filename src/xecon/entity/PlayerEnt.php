@@ -13,7 +13,7 @@ class PlayerEnt extends Entity{
 	const ACCOUNT_BANK = "Bank";
 	public function __construct(Player $player){
 		$this->player = $player;
-		parent::__construct($this->getFolderByName($player->getName()), null);
+		parent::__construct($this->getFolderByName($player->getName()));
 	}
 	public function initDefaultAccounts(){
 		$main = Main::get();

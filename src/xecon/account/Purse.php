@@ -6,7 +6,11 @@ namespace xecon\account;
 use pocketmine\item\Item;
 
 class Purse extends MoneyContainerItem{
+	const ID = 0x70D0; // TODO
+	const PER_AMOUNT = 5;
+	const MAX_STACK = 15;
+	const NAME = "Purse";
 	public function __construct($meta = 0, $cnt = 1){
-		parent::__construct("todo", $meta, $cnt, "Purse", 5);
+		parent::__construct(self::ID, $meta, $cnt, self::NAME, self::PER_AMOUNT, self::MAX_STACK);
 	}
 }

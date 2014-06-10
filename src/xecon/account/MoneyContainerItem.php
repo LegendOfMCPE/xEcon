@@ -8,7 +8,16 @@ use pocketmine\level\Level;
 use pocketmine\Player;
 
 abstract class MoneyContainerItem extends Item{
-	public function __construct($id, $meta = 0, $count = 1, $name = "Money container", $perAmount, $maxStack = 16, $throwable = true){
+	/**
+	 * @param int $id
+	 * @param int $meta
+	 * @param int $count
+	 * @param string $name
+	 * @param int|float $perAmount
+	 * @param int $maxStack
+	 * @param bool $throwable
+	 */
+	public function __construct($id, $meta = 0, $count = 1, $name, $perAmount, $maxStack, $throwable = true){
 		parent::__construct($id, $meta, $count, $name);
 		$this->perAmount = $perAmount;
 		$this->isActivable = $throwable;

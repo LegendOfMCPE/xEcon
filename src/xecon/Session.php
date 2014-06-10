@@ -10,6 +10,6 @@ class Session{
 		$this->ent = new PlayerEnt($player);
 	}
 	public function onQuit(){
-
+		
 	}
 }

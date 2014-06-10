@@ -26,7 +26,10 @@ abstract class Subcommand{
 		$result = $this->onRun($issuer, $args);
 		switch(true){
 			case is_bool($result):
-				return $result;
+				if($result === false){
+					$issuer->sendMessage("Usage: /xecon $this {$this->getUsage()} {$this->getDescription()}");
+				}
+				return true;
 			case is_string($result):
 				$issuer->sendMessage($result);
 				return true;
@@ -35,4 +38,7 @@ abstract class Subcommand{
 		}
 	}
 	protected abstract function onRun(CommandSender $issuer, array $args);
+	public function __toString(){
+		return $this->getName();
+	}
 }
