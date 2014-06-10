@@ -5,7 +5,7 @@ namespace xecon\entity;
 use xecon\account\Account;
 use xecon\Main;
 
-abstract class Entity{
+trait Entity{
 	/** @var string */
 	private $folder;
 	/** @var Account[] */
@@ -63,6 +63,5 @@ abstract class Entity{
 	public function getAccounts(){
 		return $this->accounts;
 	}
-	public function sendMessage(){
-	}
+	public abstract function sendMessage();
 }

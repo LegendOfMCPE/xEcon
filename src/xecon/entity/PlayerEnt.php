@@ -6,7 +6,8 @@ use pocketmine\Player;
 use xecon\account\Account;
 use xecon\Main;
 
-class PlayerEnt extends Entity{
+class PlayerEnt{
+	use Entity; // :) trait Entity
 	/** @var \pocketmine\Player */
 	private $player;
 	const ACCOUNT_CASH = "Cash";
@@ -39,5 +40,8 @@ class PlayerEnt extends Entity{
 			default:
 				return null;
 		}
+	}
+	public function sendMessage($msg){
+		return $this->player->sendMessage($msg);
 	}
 }

@@ -28,6 +28,7 @@ class Account implements InventoryHolder{
 	private $maxContainable = 1000;
 	/** @var int[] */
 	private $inventoryMoneySlots = [];
+	private $containerTypes = [];
 	/**
 	 * @param string $name
 	 * @param float $amount
@@ -41,8 +42,10 @@ class Account implements InventoryHolder{
 		$this->entity = $entity;
 		$this->inventory = (!($inventory instanceof Inventory)) ? new DummyInventory($this):$inventory;
 		foreach($containerTypes as $type){
-			$id = constant($type."::ID");
+			$maxContainable = constant($type."::PER_AMOUNT") * constant($type."::MAX_STACK");
+			$this->containerTypes[$maxContainable] = $type;
 		}
+		krsort($this->containerTypes, SORT_NUMERIC);
 	}
 	public function getMaxContainable(){
 		return $this->maxContainable;
@@ -66,15 +69,14 @@ class Account implements InventoryHolder{
 		if($amount > $this->maxContainable){
 			return false;
 		}
-		$old = $this->amount;
 		$this->amount = $amount;
-		$this->tidyInventory($old, $amount);
+		$this->tidyInventory( $amount);
 		return true;
 	}
 	public function getInventory(){
 		return $this->inventory;
 	}
-	public function tidyInventory($old, $new){
+	public function tidyInventory($new){
 		$this->clearInventoryMoney();
 		$this->addInventoryMoney($new);
 	}
@@ -84,6 +86,34 @@ class Account implements InventoryHolder{
 		}
 	}
 	protected function addInventoryMoney($amount){
-
+		$curAmt = $amount;
+		$items = [];
+		$availableSlotsLeft = $this->getInventory()->all(Item::get(0));
+		foreach($this->containerTypes as $type){
+			$maxStack = constant($type."::MAX_STACK");
+			$perAmount = constant($type."::PER_AMOUNT");
+			if($perAmount > $curAmt){
+				continue;
+			}
+			$count = 0;
+			while($curAmt >= $perAmount and $count < $maxStack * 16 and $availableSlotsLeft - ($count / 16) > 0){
+				$count++;
+				$curAmt -= $perAmount;
+			}
+			$items[$type] = $count;
+			if($availableSlotsLeft === 0 or $curAmt === 0){
+				break;
+			}
+		}
+		if($curAmt > 0){
+			$this->entity->sendMessage("Your \$$curAmt has been dropped due to your {$this->getName()} inventory is full.");
+		}
+		$slots = [];
+		foreach($items as $type => $count){
+			$id = constant($type."::ID");
+			$amount = (int) floor($count / 16);
+			$meta = $count % 16;
+			// TODO this complex maths got my head exploded.
+		}
 	}
 }
