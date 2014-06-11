@@ -63,5 +63,5 @@ trait Entity{
 	public function getAccounts(){
 		return $this->accounts;
 	}
-	public abstract function sendMessage();
+	public abstract function sendMessage($msg);
 }

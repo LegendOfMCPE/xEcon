@@ -28,7 +28,7 @@ class PlayerEnt{
 		return "PlayerEntity";
 	}
 	public function getAbsolutePrefix(){
-		return "XECON_PLAYER_ENT";
+		return "xEcon_player_ent";
 	}
 	public function getClass(){
 		return "xecon\\entity\\PlayerEnt";
@@ -42,6 +42,7 @@ class PlayerEnt{
 		}
 	}
 	public function sendMessage($msg){
-		return $this->player->sendMessage($msg);
+		$this->player->sendMessage($msg);
+		return true;
 	}
 }

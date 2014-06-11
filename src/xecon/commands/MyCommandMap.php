@@ -6,13 +6,16 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as Font;
 
-class MyCommandMap{
+class MyCommandMap{ // implements \pocketmine\command\CommandMap
 	/**
 	 * @var Subcommand[] $cmds
 	 */
 	protected $cmds;
 	public function register(Subcommand $cmd){
 		$this->cmds[trim(strtolower($cmd->getName()))] = $cmd;
+	}
+	public function dispatch(CommandSender $sender, $line){
+		return $this->run($sender, explode(" ", $line));
 	}
 	public function run(CommandSender $sender, array $args){
 		$showHelp = true;
@@ -58,6 +61,9 @@ class MyCommandMap{
 			$output[] = $out;
 		}
 		return $output;
+	}
+	public function getCommand($name){
+		return $this->cmds[strtolower(trim($name))];
 	}
 	/**
 	 * @param string[]|bool $data
