@@ -3,21 +3,25 @@
 namespace xecon\entity;
 
 use pocketmine\Player;
-use xecon\account\Account;
 use xecon\Main;
 
 class PlayerEnt{
-	use Entity; // :) trait Entity
+	use Entity{
+		Entity::__construct as private __parentConstruct;
+	}
 	/** @var \pocketmine\Player */
 	private $player;
 	const ACCOUNT_CASH = "Cash";
 	const ACCOUNT_BANK = "Bank";
-	public function __construct(Player $player){
+	public function __construct(Player $player, Main $main){
 		$this->player = $player;
-		parent::__construct($this->getFolderByName($player->getName()));
+		$this->__parentCostruct($this->getFolderByName($player->getName()), $main);
+	}
+	public function onQuit(){
+		$this->finalize();
 	}
 	public function initDefaultAccounts(){
-		$main = Main::get();
+		$main = $this->main;
 		$this->addAccount(self::ACCOUNT_BANK, $main->getDefaultBankMoney(), $main->getMaxBankMoney());
 		$this->addAccount(self::ACCOUNT_CASH, $main->getDefaultCashMoney(), $main->getMaxCashMoney());
 	}

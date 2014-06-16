@@ -9,21 +9,13 @@ use pocketmine\network\protocol;
 use xecon\entity\Entity;
 
 class Account implements InventoryHolder{
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $name;
-	/**
-	 * @var float
-	 */
+	/** @var float */
 	private $amount;
-	/**
-	 * @var \xecon\entity\Entity
-	 */
+	/** @var Entity */
 	private $entity;
-	/**
-	 * @var \pocketmine\inventory\Inventory
-	 */
+	/** @var DummyInventory */
 	private $inventory;
 	private $maxContainable = 1000;
 	/** @var int[] */
@@ -59,9 +51,19 @@ class Account implements InventoryHolder{
 	public function getAmount(){
 		return $this->amount;
 	}
+	/**
+	 * This raw function is only for internal use. Do NOT call this method. Call Account::pay() instead.
+	 * @param $amount
+	 * @return bool
+	 */
 	public function add($amount){
 		return $this->setAmount($this->getAmount() + $amount);
 	}
+	/**
+	 * This raw function is only for external use. Do NOT call this method. Call Account::pay() instead.
+	 * @param $amount
+	 * @return bool
+	 */
 	public function take($amount){
 		return $this->setAmount($this->getAmount() - $amount);
 	}
@@ -108,12 +110,16 @@ class Account implements InventoryHolder{
 		if($curAmt > 0){
 			$this->entity->sendMessage("Your \$$curAmt has been dropped due to your {$this->getName()} inventory is full.");
 		}
-		$slots = [];
-		foreach($items as $type => $count){
-			$id = constant($type."::ID");
-			$amount = (int) floor($count / 16);
-			$meta = $count % 16;
-			// TODO this complex maths got my head exploded.
-		}
+//		$slots = [];
+//		foreach($items as $type => $count){
+//			$id = constant($type."::ID");
+//			$amount = (int) floor($count / 16);
+//			$meta = $count % 16;
+//			// TODO this complex maths got my head exploded.
+//		}
+	}
+	public function pay(Account $other, $amount){
+		$other->take($amount);
+		$this->add($amount);
 	}
 }

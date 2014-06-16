@@ -16,7 +16,7 @@ use xecon\commands\SetMoneySubcommand;
 use xecon\commands\SetPlayerMoneySubcommand;
 
 class Main extends PluginBase implements Listener{
-	/** @var string directory where economic entity information is stored` */
+	/** @var string directory where economic entity information is stored */
 	private $edir;
 	/** @var Session[] $sessions */
 	private $sessions = [];
@@ -33,7 +33,7 @@ class Main extends PluginBase implements Listener{
 			"player-default-cash-money" => 100,
 			"player-max-cash-money" => 1000,
 		]);
-		$this->subcommandMap = new MyCommandMap;
+		$this->subcommandMap = new MyCommandMap($this);
 		$this->subcommandMap->register(new SetMoneySubcommand);
 		$this->subcommandMap->register(new SetPlayerMoneySubcommand);
 	}
@@ -57,7 +57,7 @@ class Main extends PluginBase implements Listener{
 		return $this->edir;
 	}
 	public function onJoin(PlayerJoinEvent $evt){
-		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer());
+		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer(), $this);
 	}
 	public function onQuit(PlayerQuitEvent $evt){
 		$p = $evt->getPlayer();
@@ -75,11 +75,8 @@ class Main extends PluginBase implements Listener{
 	public function getSessions(){
 		return $this->sessions;
 	}
-	/**
-	 * @return self
-	 */
-	public static function get(){
-		return Server::getInstance()->getPluginManager()->getPlugin("xEcon");
+	public function getPlayerEntity(Player $player){
+		return $this->sessions[$this->CID($player)]->getEntity();
 	}
 	public static function CID(Player $player){
 		return $player->getID();

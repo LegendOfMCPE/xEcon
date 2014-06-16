@@ -20,13 +20,15 @@ class MyCommandMap{ // implements \pocketmine\command\CommandMap
 	public function run(CommandSender $sender, array $args){
 		$showHelp = true;
 		if(isset($args[0])){
-			$showHelp = false;
 			$cmd = strtolower(trim(array_shift($args)));
 			if($cmd !== "help" and isset($this->cmds[$cmd])){
 				return $this->cmds[$cmd]->run($sender, $args);
 			}
 		}
-		$sender->sendMessage($this->help(1, ($sender instanceof Player) ? 5:-1));
+		if($showHelp){
+
+			$sender->sendMessage($this->help(1, ($sender instanceof Player) ? 5:-1));
+		}
 		return true;
 	}
 	public function help($page = 1, $shown = -1){
