@@ -1,4 +1,4 @@
 xEcon
 =====
 
-eXclusive economy, eXpensive economy, eXportable economy, eXtraordinary economy plugin!
+eXclusive economy, eXternal economy, eXportable economy, eXtraordinary economy plugin!
