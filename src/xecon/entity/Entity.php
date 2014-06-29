@@ -14,7 +14,7 @@ trait Entity{
 	protected $liabilities = [];
 	/** @var Main */
 	protected $main;
-	protected function __construct($folder, Main $main){
+	protected function initializeXEconEntity($folder, Main $main){
 		$this->folder = $folder;
 		if(!is_dir($folder)){
 			$this->initAsDefault();

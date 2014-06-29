@@ -6,16 +6,14 @@ use pocketmine\Player;
 use xecon\Main;
 
 class PlayerEnt{
-	use Entity{
-		Entity::__construct as private __parentConstruct;
-	}
+	use Entity;
 	/** @var \pocketmine\Player */
 	private $player;
 	const ACCOUNT_CASH = "Cash";
 	const ACCOUNT_BANK = "Bank";
 	public function __construct(Player $player, Main $main){
 		$this->player = $player;
-		$this->__parentCostruct($this->getFolderByName($player->getName()), $main);
+		$this->initializeXEconEntity($this->getFolderByName($player->getName()), $main);
 	}
 	public function onQuit(){
 		$this->finalize();
@@ -32,7 +30,7 @@ class PlayerEnt{
 		return "PlayerEntity";
 	}
 	public function getAbsolutePrefix(){
-		return "xEcon_player_ent";
+		return "xEcon_player_ent>>>>";
 	}
 	public function getClass(){
 		return "xecon\\entity\\PlayerEnt";
