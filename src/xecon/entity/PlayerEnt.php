@@ -27,7 +27,7 @@ class PlayerEnt{
 		return $this->player;
 	}
 	public function getName(){
-		return "PlayerEntity";
+		return $this->player->getName();
 	}
 	public function getAbsolutePrefix(){
 		return "xEcon_player_ent>>>>";
