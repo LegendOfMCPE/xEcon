@@ -3,8 +3,13 @@
 namespace xecon\commands;
 
 use pocketmine\command\CommandSender;
+use xecon\Main;
 
 abstract class Subcommand{
+	protected $main;
+	public function __construct(Main $main){
+		$this->main = $main;
+	}
 	/**
 	 * @return string
 	 */

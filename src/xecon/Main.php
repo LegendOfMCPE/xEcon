@@ -9,11 +9,9 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
-use pocketmine\Server;
 use pocketmine\utils\Config;
 use xecon\commands\MyCommandMap;
 use xecon\commands\SetMoneySubcommand;
-use xecon\commands\SetPlayerMoneySubcommand;
 
 class Main extends PluginBase implements Listener{
 	/** @var string directory where economic entity information is stored */
@@ -34,8 +32,7 @@ class Main extends PluginBase implements Listener{
 			"player-max-cash-money" => 1000,
 		]);
 		$this->subcommandMap = new MyCommandMap($this);
-		$this->subcommandMap->register(new SetMoneySubcommand);
-		$this->subcommandMap->register(new SetPlayerMoneySubcommand);
+		$this->subcommandMap->register(new SetMoneySubcommand($this));
 	}
 	public function getDefaultBankMoney(){
 		return $this->userConfig->get("player-default-bank-money");
@@ -74,6 +71,9 @@ class Main extends PluginBase implements Listener{
 	}
 	public function getSessions(){
 		return $this->sessions;
+	}
+	public function getSession(Player $player){
+		return $this->sessions[$player->getID()];
 	}
 	public function getPlayerEntity(Player $player){
 		return $this->sessions[$this->CID($player)]->getEntity();

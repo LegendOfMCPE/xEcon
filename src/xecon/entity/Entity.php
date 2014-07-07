@@ -30,7 +30,7 @@ trait Entity{
 	private function init(){
 		$data = json_decode(file_get_contents($this->getFolder()."general.json"));
 		foreach($data["accounts"] as $account=>$data){
-			$this->accounts[$account] = new Account($account, $data["amount"], $this->getInventory($account));
+			$this->accounts[$account] = new Account($account, $data["amount"], $this, $this->getInventory($account));
 			$this->accounts[$account]->setMaxContainable($data["max-containable"]);
 		}
 	}
@@ -52,6 +52,7 @@ trait Entity{
 	}
 	protected function addLiability($name, $maxAmount, $default = 0){
 		$this->liabilities[$name] = new Account($name, $default, $this, null);
+		$this->liabilities[$name]->setMaxContainable($maxAmount);
 	}
 	public function save(){
 //		file_put_contents($this->folder."hook.json", json_encode(get_class($this)));

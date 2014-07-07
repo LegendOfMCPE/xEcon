@@ -2,9 +2,6 @@
 
 namespace xecon\account;
 
-
-use pocketmine\item\Item;
-
 class Purse extends MoneyContainerItem{
 	const ID = 0x70D0; // TODO
 	const PER_AMOUNT = 5;

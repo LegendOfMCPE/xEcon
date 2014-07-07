@@ -58,7 +58,7 @@ EOI
 		<Table ss:ExpandedColumnCount=\"$max\" ss:ExpandedRowCount=\"".count($rows)."\" x:FullColumns=\"1\" x:FullRows=\"1\" ss:DefaultColumnWidth=\"54\" ss:DefaultRowHeight=\"16/5\">
 ");
 			// write each row
-			foreach($rows as $row=>$cells){
+			foreach($rows as $cells){
 				fwrite($s, "\t\t\t<Row ss:AutoFitHeight=\"0\">
 ");
 				foreach($cells as $cell){
