@@ -30,7 +30,7 @@ class PlayerEnt{
 		return $this->player->getName();
 	}
 	public function getAbsolutePrefix(){
-		return "xEcon_player_ent>>>>";
+		return "xEcon_player_ent";
 	}
 	public function getClass(){
 		return "xecon\\entity\\PlayerEnt";

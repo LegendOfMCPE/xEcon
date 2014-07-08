@@ -44,7 +44,7 @@ trait Entity{
 		return $this->folder;
 	}
 	protected function getFolderByName($name){
-		return $this->main->getEntDir().$this->getAbsolutePrefix().$name;
+		return $this->main->getEntDir().$this->getAbsolutePrefix()."@#@!%".$name;
 	}
 	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX){
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this, $this->getInventory($name));
@@ -72,7 +72,7 @@ trait Entity{
 	public function getAccounts(){
 		return $this->accounts;
 	}
-	public function getNetBalance(){
+	public function getNetBalance(){ // no idea why I put this here. well, this might get handy later.
 		$balance = 0;
 		foreach($this->accounts as $acc){
 			$balance += $acc->getAmount();

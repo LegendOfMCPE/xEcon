@@ -122,4 +122,10 @@ class Account implements InventoryHolder{
 		$other->take($amount);
 		$this->add($amount);
 	}
+	/**
+	 * @return \xecon\entity\Entity
+	 */
+	public function getEntity(){
+		return $this->entity;
+	}
 }
