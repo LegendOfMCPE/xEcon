@@ -118,6 +118,15 @@ class Account implements InventoryHolder{
 ////			// TODO this complex maths got my head exploded.
 ////		}
 //	}
+	/**
+	 * This is an API method. You are encouraged to
+	 * use this method (with $account as \xecon\Main::getService()->getService($serviceName))
+	 * instead of Account::add(), Account::take() or Account::setAmount(). Look at
+	 * <a href="https://github.com/LegendOfMCPE/xEcon/wiki/developer's%20guide">the article about
+	 * <i>double entry</i> on the wiki</a> for why using this method is encouraged.
+	 * @param Account $other
+	 * @param $amount
+	 */
 	public function pay(Account $other, $amount){
 		$other->take($amount);
 		$this->add($amount);

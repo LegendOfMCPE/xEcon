@@ -67,7 +67,7 @@ trait Entity{
 		file_put_contents($this->folder."general.json", json_encode($data));
 	}
 	public function getAccount($name){
-		return $this->accounts[$name];
+		return isset($this->accounts[$name]) ? $this->accounts[$name]:false;
 	}
 	public function getAccounts(){
 		return $this->accounts;

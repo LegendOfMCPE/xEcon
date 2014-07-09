@@ -14,6 +14,7 @@ use xecon\account\Account;
 use xecon\commands\MyCommandMap;
 use xecon\commands\SetMoneySubcommand;
 use xecon\entity\Entity;
+use xecon\entity\Service;
 
 class Main extends PluginBase implements Listener{
 	/** @var string directory where economic entity information is stored */
@@ -26,6 +27,8 @@ class Main extends PluginBase implements Listener{
 	private $subcommandMap;
 	/** @var \SQLite3 */
 	private $logs;
+	/** @var Service */
+	private $service;
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -35,8 +38,10 @@ class Main extends PluginBase implements Listener{
 			"player-default-cash-money" => 100,
 			"player-max-cash-money" => 1000,
 		]);
-		$this->logs = new \SQLite3($this->getDataFolder().":memory:");
+		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
 		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT);");
+		$this->service = new Service($this);
+		// TODO I remember I wanted to do something here, but after chasing a few PocketMine-MP bugs, I forgot it. :( I made this mark here to remind ourselves that we should add something here. It is something about callback tasks.
 		$this->subcommandMap = new MyCommandMap($this);
 		$this->subcommandMap->register(new SetMoneySubcommand($this));
 	}
@@ -89,6 +94,9 @@ class Main extends PluginBase implements Listener{
 	}
 	public function getLogs(){
 		return $this->logs;
+	}
+	public function getService(){
+		return $this->service;
 	}
 	public function logTransaction(Account $from, Account $to, $amount, $details = "None"){
 		$op = $this->logs->prepare("INSERT INTO transactions (fromtype, fromname, fromaccount, totype, toname, toaccount, amount, details, tmstmp) WHERE (:fromtype, :fromname, :fromaccount, :totype, :toname, :toaccount, :amount, :details, :tmstmp);");

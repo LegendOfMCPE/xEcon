@@ -2,24 +2,30 @@
 
 namespace xecon\entity;
 
-use pocketmine\plugin\Plugin;
-use pocketmine\utils\TextFormat;
 use xecon\Main;
 
-abstract class Service{
+class Service{
 	use Entity;
-	protected $plugin;
-	public function __construct(Plugin $main, Main $selfMain){
-		$this->plugin = $main;
-		$this->initializeXEconEntity($this->getFolderByName(strtolower($this->getName())), $selfMain);
+	public function __construct(Main $main){
+		$this->initializeXEconEntity($this->getFolderByName($this->getName()), $main);
 	}
-	public function sendMessage($msg){
-		$this->plugin->getLogger()->info(TextFormat::GRAY."[".$this->getName()."] $msg");
+	public function sendMessage($msg, $level = \LogLevel::INFO){
+		$this->main->getLogger()->log($level, $msg);
 	}
 	public function initDefaultAccounts(){
-		$this->addAccount("Service", PHP_INT_MAX);
+		$this->addAccount("Operators", (int) ceil(PHP_INT_MAX / 2));
+		$this->addAccount("BankLoanSource", PHP_INT_MAX);
+	}
+	public function registerService($name){
+		$this->addAccount($name, (int) ceil(PHP_INT_MAX / 2));
+	}
+	public function getService($name){
+		return $this->getAccount($name);
+	}
+	public function getName(){
+		return "general_service";
 	}
 	public function getAbsolutePrefix(){
-		return "server_service_ent>>";
+		return "SERVER";
 	}
 }
