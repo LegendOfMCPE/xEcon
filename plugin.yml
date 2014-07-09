@@ -7,3 +7,8 @@ main: xecon\Main
 commands:
   xecon:
     description: xEcon main command
+    aliases: [x, xe, econ, xec]
+    usage: "/xecon <subcommand|help> (Use '/xecon help' to see the subcommands)"
+permissions:
+  xecon:
+    description: xEcon main permission node, allows full control on xEcon
