@@ -115,6 +115,17 @@ class Main extends PluginBase implements Listener{
 		$result = $op->execute()->fetchArray();
 		// TODO read $result
 	}
+	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX){ // is it possible to use RegExp to filter texts in SQLite3?
+		$query = "SELECT * FROM transactions WHERE (tmstmp BETWEEN :timemin AND :timemax) AND (amount BETWEEN :amountmin AND :amountmax);";
+		if(is_string($fromType)) $query .= " AND fromtype = :fromtype";
+		if(is_string($fromName)) $query .= " AND fromname = :fromname";
+		if(is_string($fromAccount)) $query .= " AND fromaccount = :fromaccount";
+		$op = $this->logs->prepare($query);
+		$op->bindValue(":timemin", $tmstmpMin);
+		$op->bindValue(":timemax", $tmstmpMax === null ? time():$tmstmpMax);
+		$op->bindValue(":amountmin", $amountMin);
+		$op->bindValue(":amountmax", $amountMax);
+	}
 	public static function CID(Player $player){
 		return $player->getID();
 	}
