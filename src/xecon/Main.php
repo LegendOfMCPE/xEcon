@@ -112,19 +112,40 @@ class Main extends PluginBase implements Listener{
 		$op->bindValue(":toname", $ent->getName());
 		$op->bindValue(":lowlim", $start);
 		$op->bindValue(":uplim", $end);
-		$result = $op->execute()->fetchArray();
-		// TODO read $result
+		return $op->execute();
 	}
 	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX){ // is it possible to use RegExp to filter texts in SQLite3?
 		$query = "SELECT * FROM transactions WHERE (tmstmp BETWEEN :timemin AND :timemax) AND (amount BETWEEN :amountmin AND :amountmax);";
 		if(is_string($fromType)) $query .= " AND fromtype = :fromtype";
 		if(is_string($fromName)) $query .= " AND fromname = :fromname";
 		if(is_string($fromAccount)) $query .= " AND fromaccount = :fromaccount";
+		if(is_string($toType)) $query .= " AND totype = :totype";
+		if(is_string($toName)) $query .= " AND toname = :toname";
+		if(is_string($toAccount)) $query .= " AND toaccount = :toaccount";
 		$op = $this->logs->prepare($query);
 		$op->bindValue(":timemin", $tmstmpMin);
 		$op->bindValue(":timemax", $tmstmpMax === null ? time():$tmstmpMax);
 		$op->bindValue(":amountmin", $amountMin);
 		$op->bindValue(":amountmax", $amountMax);
+		if(strpos($query, ":fromtype") !== false){
+			$op->bindValue(":fromtype", $fromType);
+		}
+		if(strpos($query, ":fromname") !== false){
+			$op->bindValue(":fromname", $fromName);
+		}
+		if(strpos($query, ":fromaccount") !== false){
+			$op->bindValue(":fromaccount", $fromAccount);
+		}
+		if(strpos($query, ":totype") !== false){
+			$op->bindValue(":totype", $toType);
+		}
+		if(strpos($query, ":toname") !== false){
+			$op->bindValue(":toname", $toName);
+		}
+		if(strpos($query, ":toaccount") !== false){
+			$op->bindValue(":toaccount", $toAccount);
+		}
+		return $op->execute();
 	}
 	public static function CID(Player $player){
 		return $player->getID();
