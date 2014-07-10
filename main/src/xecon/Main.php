@@ -2,17 +2,12 @@
 
 namespace xecon;
 
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
 use xecon\account\Account;
-use xecon\commands\MyCommandMap;
-use xecon\commands\SetMoneySubcommand;
 use xecon\entity\Entity;
 use xecon\entity\Service;
 
@@ -21,10 +16,6 @@ class Main extends PluginBase implements Listener{
 	private $edir;
 	/** @var Session[] $sessions */
 	private $sessions = [];
-	/** @var Config */
-	private $userConfig;
-	/** @var MyCommandMap */
-	private $subcommandMap;
 	/** @var \SQLite3 */
 	private $logs;
 	/** @var Service */
@@ -32,33 +23,25 @@ class Main extends PluginBase implements Listener{
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-		$this->userConfig = new Config($this->getDataFolder()."config.yml", Config::YAML, [ // If I shifted my right hand one key leftwards on the QWERTY keyboard, YAML would become TANK
-			"player-default-bank-money" => 500,
-			"player-bank-max-money" => 100000,
-			"player-default-cash-money" => 100,
-			"player-max-cash-money" => 1000,
-		]);
 		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
-		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT);");
+		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
 		$this->service = new Service($this);
 		// TODO I remember I wanted to do something here, but after chasing a few PocketMine-MP bugs, I forgot it. :( I made this mark here to remind ourselves that we should add something here. It is something about callback tasks.
-		$this->subcommandMap = new MyCommandMap($this);
-		$this->subcommandMap->register(new SetMoneySubcommand($this));
 	}
 	public function onDisable(){
 		$this->logs->close();
 	}
 	public function getDefaultBankMoney(){
-		return $this->userConfig->get("player-default-bank-money");
+		return $this->getConfig()->get("player-default-bank-money");
 	}
 	public function getDefaultCashMoney(){
-		return $this->userConfig->get("player-default-cash-money");
+		return $this->getConfig()->get("player-default-cash-money");
 	}
 	public function getMaxBankMoney(){
-		return $this->userConfig->get("player-max-bank-money");
+		return $this->getConfig()->get("player-max-bank-money");
 	}
 	public function getMaxCashMoney(){
-		return $this->userConfig->get("player-max-cash-money");
+		return $this->getConfig()->get("player-max-cash-money");
 	}
 	private function mkdirs(){
 		@mkdir($this->getDataFolder());
@@ -77,12 +60,6 @@ class Main extends PluginBase implements Listener{
 			unset($this->sessions[$this->CID($p)]);
 		}
 	}
-	public function onCommand(CommandSender $sender, Command $cmd, $l, array $args){
-		return $this->subcommandMap->run($sender, $args);
-	}
-	public function getUserConfig(){
-		return $this->userConfig;
-	}
 	public function getSessions(){
 		return $this->sessions;
 	}
@@ -99,7 +76,7 @@ class Main extends PluginBase implements Listener{
 		return $this->service;
 	}
 	public function logTransaction(Account $from, Account $to, $amount, $details = "None"){
-		$op = $this->logs->prepare("INSERT INTO transactions (fromtype, fromname, fromaccount, totype, toname, toaccount, amount, details, tmstmp) WHERE (:fromtype, :fromname, :fromaccount, :totype, :toname, :toaccount, :amount, :details, :tmstmp);");
+		$op = $this->logs->prepare("INSERT INTO transactions (fromtype, fromname, fromaccount, totype, toname, toaccount, amount, details, tmstmp) VALUES (:fromtype, :fromname, :fromaccount, :totype, :toname, :toaccount, :amount, :details, :tmstmp)");
 		$op->bindValue(":fromtype", $from->getEntity()->getAbsolutePrefix());
 		$op->bindValue(":fromname", $from->getEntity()->getName());
 		$op->bindValue(":fromaccount", $from->getName());
@@ -111,25 +88,62 @@ class Main extends PluginBase implements Listener{
 		$op->bindValue(":tmstmp", time());
 		$op->execute();
 	}
-	public function getTransactionsToInTime(Entity $ent, $start, $end = null){
-		if($end === null){
-			$end = time();
+	/**
+	 * @param string|null $fromType
+	 * @param string|null $fromName
+	 * @param string|null $fromAccount
+	 * @param string|null $toType
+	 * @param string|null $toName
+	 * @param string|null $toAccount
+	 * @param int $tmstmpMin
+	 * @param int|null $tmstmpMax
+	 * @param int $amountMin
+	 * @param int $amountMax
+	 * @param int|string $fromToOper
+	 * @return \SQLite3Result
+	 */
+	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX, $fromToOper = "OR"){ // is it possible to use RegExp to filter texts in SQLite3?
+		if($fromToOper === T_LOGICAL_XOR or $fromToOper === T_XOR_EQUAL){
+			$fromToOper = "XOR";
 		}
-		$op = $this->logs->prepare("SELECT * FROM transactions WHERE totype = :totype AND toname = :toname AND (tmstmp BETWEEN :lowlim and :uplim);");
-		$op->bindValue(":totype", $ent->getAbsolutePrefix());
-		$op->bindValue(":toname", $ent->getName());
-		$op->bindValue(":lowlim", $start);
-		$op->bindValue(":uplim", $end);
-		return $op->execute();
-	}
-	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX){ // is it possible to use RegExp to filter texts in SQLite3?
+		elseif($fromToOper === T_LOGICAL_OR or $fromToOper === T_OR_EQUAL or $fromToOper === T_BOOLEAN_OR){
+			$fromToOper = "OR";
+		}
+		elseif($fromToOper === T_AND_EQUAL or $fromToOper === T_BOOLEAN_AND or $fromToOper === T_LOGICAL_AND){
+			$fromToOper = "AND";
+		}
 		$query = "SELECT * FROM transactions WHERE (tmstmp BETWEEN :timemin AND :timemax) AND (amount BETWEEN :amountmin AND :amountmax);";
-		if(is_string($fromType)) $query .= " AND fromtype = :fromtype";
-		if(is_string($fromName)) $query .= " AND fromname = :fromname";
-		if(is_string($fromAccount)) $query .= " AND fromaccount = :fromaccount";
-		if(is_string($toType)) $query .= " AND totype = :totype";
-		if(is_string($toName)) $query .= " AND toname = :toname";
-		if(is_string($toAccount)) $query .= " AND toaccount = :toaccount";
+		$from = "";
+		if(is_string($fromType) or is_string($fromName) or is_string($fromAccount)){
+			$from .= "(";
+			$exprs = [];
+			if(is_string($fromType)) $exprs[] = "fromtype = :fromtype";
+			if(is_string($fromName)) $exprs[] = "fromname = :fromname";
+			if(is_string($fromAccount)) $exprs[] = "fromaccount = :fromaccount";
+			$from .= implode(" AND ", $exprs);
+			$from .= ")";
+		}
+		$to = "";
+		if(is_string($toType) or is_string($toName) or is_string($toAccount)){
+			$to .= "(";
+			$exprs = [];
+			if(is_string($toType)) $exprs[] = "totype = :totype";
+			if(is_string($toName)) $exprs[] = "toname = :toname";
+			if(is_string($toAccount)) $exprs[] = "toaccount = :toaccount";
+			$to .= implode(" AND ", $exprs);
+			$to .= ")";
+		}
+		if($from and $to){
+			$query .= " AND ($from $fromToOper $to)";
+		}
+		elseif($from or $to){
+			if($from){
+				$query .= " AND $from";
+			}
+			else{
+				$query .= " AND $to";
+			}
+		}
 		$op = $this->logs->prepare($query);
 		$op->bindValue(":timemin", $tmstmpMin);
 		$op->bindValue(":timemax", $tmstmpMax === null ? time():$tmstmpMax);

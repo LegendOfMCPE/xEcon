@@ -1,0 +1,12 @@
+---
+player account:
+  default:
+    # to avoid getting a lot of money using new accounts and /pay
+    give for each ip: true
+    bank: 1000
+    cash: 20 # this is the amount in an "octopus card" in Hong Kong when you buy a new one :D
+  max:
+    bank: 100000
+    cash: 1000 # this is the maximum amount that can be saved in an "octopus card" in Hong Kong xD
+
+...

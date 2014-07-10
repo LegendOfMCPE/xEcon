@@ -2,7 +2,16 @@
 
 namespace xecon\utils;
 
+use pocketmine\Player;
+use xecon\Main;
+
 class ExcelWriter{
+	const TYPE = 0;
+	const TARGET_NAME = 1;
+	const TARGET_ACCOUNT = 2;
+	const AMOUNT = 3;
+	const DETAILS = 4;
+	const DATE = 5; // TODO replace these with config properties
 	public static function export($dir, $name, array $data){
 		$file = $dir.((substr($dir, -1) === "/" or substr($dir, -1) === "\\" )? "":"/")."$name.xml";
 		$s = fopen($file, "wt");
@@ -86,19 +95,53 @@ EOI
 ");
 		fclose($s);
 	}
-	// public static function arrToStr($var){
-		// $output = "array(";
-		// foreach($var as $key=>$value){
-			// $output .= is_string($key) ? "\"$key\"":$key;
-			// $output .= "=>";
-			// if(is_string($value))
-				// $output .= "\"$value\"";
-			// elseif(is_array($value))
-				// $output .= self::arrToStr($var);
-			// else $output .= "$value";
-			// $output .= ", ";
-		// }
-		// $output = substr($output, 0, -2).")";
-		// return $output;
-	// }
+	/**
+	 * @param Main $main
+	 * @param Player $player
+	 * @param int $from
+	 * @param int $to
+	 * @param int|string $fromToFilter T_LOGICAL_OR for all transactions, T_LOGICAL_AND for self-to-self inter-account transactions, T_LOGICAL_XOR for inter-entity transactions
+	 * @return string
+	 */
+	public static function exportTransactions(Main $main, Player $player, $from = 0, $to = PHP_INT_MAX, $fromToFilter = T_LOGICAL_OR){
+		$ent = $main->getSession($player)->getEntity();
+		$query = $main->getTransactions($ent->getAbsolutePrefix(), $ent->getName(), null, $ent->getAbsolutePrefix(), $ent->getName(), null, $from, $to, 0, PHP_INT_MAX, $fromToFilter);
+		$dir = $main->getDataFolder()."logs/";
+		$file = strtolower($player->getName())." transaction logs on ".date("F j, Y")." at ".date("H.i.s (e O, T)");
+		$data = [];
+		while(($dat = $query->fetchArray(SQLITE3_ASSOC)) !== false){
+			$data[] = $dat;
+		}
+		$serialized = serialize($data);
+		$lowName = strtolower($player->getName());
+		$onRun = function() use($dir, $file, $serialized, $lowName){
+			@mkdir($dir);
+			$rawData = unserialize($serialized);
+			$output = [];
+			foreach($rawData as $transaction){
+				$timestamp = $transaction["tmstmp"];
+				$out = [
+					self::TYPE => "Pay", // pay or receive
+					self::TARGET_NAME => $transaction["totype"]." ".$transaction["toname"], // name of the entity paid to/received from
+					self::TARGET_ACCOUNT => $transaction["toaccount"], // account paid to/received from
+					self::AMOUNT => $transaction["amount"], // amount paid
+					self::DETAILS => $transaction["details"], // details, if exists, or "none"
+					self::DATE => "__DATE__$timestamp", // "__DATE__" followed by the timestamp
+				];
+				if($transaction["totype"] === "Player" and $transaction["toname"] === $lowName){
+					$out[self::TYPE] = "Receive";
+					$out[self::TARGET_NAME] = $transaction["fromtype"]." ".$transaction["fromname"];
+					$out[self::TARGET_ACCOUNT] = $transaction["fromaccount"];
+				}
+				$output[] = $out;
+			}
+			self::export($dir, $file, $output);
+		};
+		$onCompletion = function() use($main, $dir, $file){
+			$main->getLogger()->info("Exported transaction logs to $dir".$file);
+		};
+		$task = new CallbackAsyncTask($onRun, $onCompletion);
+		$main->getServer()->getScheduler()->scheduleAsyncTask($task);
+		return $dir.$file;
+	}
 }

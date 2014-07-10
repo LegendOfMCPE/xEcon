@@ -43,6 +43,12 @@ trait Entity{
 	public function getFolder(){
 		return $this->folder;
 	}
+	/**
+	 * @return Main
+	 */
+	public function getMain(){
+		return $this->main;
+	}
 	protected function getFolderByName($name){
 		return $this->main->getEntDir().$this->getAbsolutePrefix()."@#@!%".$name;
 	}
@@ -64,7 +70,7 @@ trait Entity{
 				"max-containable" => $acc->getMaxContainable()
 			];
 		}
-		file_put_contents($this->folder."general.json", json_encode($data));
+		file_put_contents($this->folder."general.json", json_encode($data, JSON_PRETTY_PRINT|JSON_BIGINT_AS_STRING));
 	}
 	public function getAccount($name){
 		return isset($this->accounts[$name]) ? $this->accounts[$name]:false;

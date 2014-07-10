@@ -9,6 +9,7 @@ use xecon\tax\taxes\TaxType;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
+	/** @var \xecon\account\Account */
 	private $service;
 	/** @var TaxType[] */
 	private $types = [];
@@ -71,5 +72,11 @@ class Main extends PluginBase implements Listener{
 				unset($this->types[$name]);
 			}
 		}
+	}
+	/**
+	 * @return \xecon\account\Account
+	 */
+	public function getService(){
+		return $this->service;
 	}
 }

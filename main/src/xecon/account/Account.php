@@ -61,12 +61,17 @@ class Account implements InventoryHolder{
 	}
 	/**
 	 * This raw function is only for internal use. Calling this method is discouraged unless logging of transactions is unwanted. Call Account::pay() instead.
-	 * @param $amount
+	 * @param int $amount
 	 * @return bool
 	 */
 	public function take($amount){
 		return $this->setAmount($this->getAmount() - $amount);
 	}
+	/**
+	 * This raw function is only for internal use. Calling this method is discouraged unless logging of transactions is unwanted. Call Account::pay() instead.
+	 * @param int $amount
+	 * @return bool
+	 */
 	public function setAmount($amount){
 		if($amount > $this->maxContainable){
 			return false;
@@ -125,11 +130,13 @@ class Account implements InventoryHolder{
 	 * <a href="https://github.com/LegendOfMCPE/xEcon/wiki/developer's%20guide">the article about
 	 * <i>double entry</i> on the wiki</a> for why using this method is encouraged.
 	 * @param Account $other
-	 * @param $amount
+	 * @param number $amount
+	 * @param string $detail
 	 */
-	public function pay(Account $other, $amount){
+	public function pay(Account $other, $amount, $detail = "None"){
 		$other->take($amount);
 		$this->add($amount);
+		$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
 	}
 	/**
 	 * @return \xecon\entity\Entity

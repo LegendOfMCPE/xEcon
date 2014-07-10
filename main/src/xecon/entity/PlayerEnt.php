@@ -27,10 +27,10 @@ class PlayerEnt{
 		return $this->player;
 	}
 	public function getName(){
-		return $this->player->getName();
+		return strtolower($this->player->getName());
 	}
 	public function getAbsolutePrefix(){
-		return "xEcon_player_ent";
+		return "Player";
 	}
 	public function getClass(){
 		return "xecon\\entity\\PlayerEnt";

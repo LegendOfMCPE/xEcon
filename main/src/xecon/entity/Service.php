@@ -23,7 +23,7 @@ class Service{
 		return $this->getAccount($name);
 	}
 	public function getName(){
-		return "general_service";
+		return "Server";
 	}
 	public function getAbsolutePrefix(){
 		return "SERVER";

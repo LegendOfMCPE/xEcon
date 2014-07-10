@@ -11,6 +11,7 @@ class CollectTaxTask extends PluginTask{
 		$xEcon = $this->getOwner()->getServer()->getPluginManager()->getPlugin("xEcon"); // this task won't be called if xEcon is disabled, as heard and remembered
 		$players = $this->getOwner()->getServer()->getOnlinePlayers();
 		foreach($players as $player){
+			/** @var \xecon\entity\Entity $ent */
 			$ent = $xEcon->getSession($player)->getEntity();
 			/** @var Main $xEconTax */
 			$xEconTax = $this->getOwner();

@@ -1,11 +1,33 @@
 ---
-# how often should tax be collected?
+## how often should tax be collected?
 # It should be <frequency> <unit>. Enter a number for frequency.
 frequency: 30
 # Put second, seconds, minute, minutes, hour or hours
 unit: minute
-# Base amount to take each tax collection
+## Types of tax
+# Types of tax include "base" and "salary". The usage of each is explained below. You may remove any of them if you like.
 taxes:
 - type: base
-
+  # name of the tax. if you leave this bank, it will become the type name + the account name
+  name: standard tax
+  account: Bank
+  amount: 100
+  # expressions documentation can be found at https://github.com/LegendOfMCPE/xEcon/wiki
+  exemptions:
+  - op
+  # actions on tax evasion (not enough money to pay tax). you can put "ban name", "ban ip"
+  on tax evasion:
+  - ban name
+- type: base
+  name: rich people's tax
+  account: Bank
+  amount: 500
+  whitelist:
+  - notop AND ACCOUNT bank > 100000
+- type: salary
+  account: Bank
+  percentage: 13
+  exemptions:
+  - TOTALSALARY < 4000
+  - op
 ...

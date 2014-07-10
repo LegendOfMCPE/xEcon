@@ -46,7 +46,7 @@ class TaxType{
 		return $this->class;
 	}
 	public function create(array $args){
-		return $this->class->newInstance($args);
+		return $this->class->newInstance($args, $this->getPlugin());
 	}
 	/**
 	 * @return Plugin
