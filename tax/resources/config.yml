@@ -1,0 +1,11 @@
+---
+# how often should tax be collected?
+# It should be <frequency> <unit>. Enter a number for frequency.
+frequency: 30
+# Put second, seconds, minute, minutes, hour or hours
+unit: minute
+# Base amount to take each tax collection
+taxes:
+- type: base
+
+...
