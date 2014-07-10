@@ -112,7 +112,7 @@ class Main extends PluginBase implements Listener{
 		elseif($fromToOper === T_AND_EQUAL or $fromToOper === T_BOOLEAN_AND or $fromToOper === T_LOGICAL_AND){
 			$fromToOper = "AND";
 		}
-		$query = "SELECT * FROM transactions WHERE (tmstmp BETWEEN :timemin AND :timemax) AND (amount BETWEEN :amountmin AND :amountmax);";
+		$query = "SELECT * FROM transactions WHERE (tmstmp BETWEEN :timemin AND :timemax) AND (amount BETWEEN :amountmin AND :amountmax) ORDER BY tmstmp ASC;";
 		$from = "";
 		if(is_string($fromType) or is_string($fromName) or is_string($fromAccount)){
 			$from .= "(";
