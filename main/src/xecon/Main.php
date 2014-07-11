@@ -7,9 +7,11 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\CallbackTask;
 use xecon\account\Account;
 use xecon\entity\Entity;
 use xecon\entity\Service;
+use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
 	/** @var string directory where economic entity information is stored */
@@ -20,13 +22,27 @@ class Main extends PluginBase implements Listener{
 	private $logs;
 	/** @var Service */
 	private $service;
+	/**
+	 * @var array[]
+	 */
+	public $threadCalls = [];
+	private $threadCallHandleTaskID;
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
 		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
 		$this->service = new Service($this);
+		$this->threadCallHandleTaskID = $this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackTask(array($this, "handleThreadCalls")), 1, 1)->getTaskId(); // this method doesn't use a plugin task because it handles a thread call
 		// TODO I remember I wanted to do something here, but after chasing a few PocketMine-MP bugs, I forgot it. :( I made this mark here to remind ourselves that we should add something here. It is something about callback tasks.
+	}
+	public function handleThreadCalls(){
+		foreach($this->threadCalls as $call){
+			call_user_func_array($call[0], $call[1]);
+		}
+		if($this->isDisabled()){
+			$this->getServer()->getScheduler()->cancelTask($this->threadCallHandleTaskID);
+		}
 	}
 	public function onDisable(){
 		$this->logs->close();
