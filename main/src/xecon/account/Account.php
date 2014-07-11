@@ -132,11 +132,14 @@ class Account implements InventoryHolder{
 	 * @param Account $other
 	 * @param number $amount
 	 * @param string $detail
+	 * @return bool
 	 */
 	public function pay(Account $other, $amount, $detail = "None"){
-		$other->take($amount);
-		$this->add($amount);
-		$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
+		if($other->take($amount) and $this->add($amount)){
+			$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * @return \xecon\entity\Entity
