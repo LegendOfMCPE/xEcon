@@ -10,6 +10,7 @@ use pocketmine\plugin\PluginBase;
 use xecon\account\Account;
 use xecon\entity\Entity;
 use xecon\entity\Service;
+use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
 	/** @var string directory where economic entity information is stored */
@@ -20,6 +21,11 @@ class Main extends PluginBase implements Listener{
 	private $logs;
 	/** @var Service */
 	private $service;
+	const QUEUE_LOG_GET = "GET";
+	const QUEUE_LOG_LOG = "PUT";
+	/** @var string[] */
+	public static $queue = [];
+	public static $results = [];
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -27,9 +33,27 @@ class Main extends PluginBase implements Listener{
 		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
 		$this->service = new Service($this);
 		// TODO I remember I wanted to do something here, but after chasing a few PocketMine-MP bugs, I forgot it. :( I made this mark here to remind ourselves that we should add something here. It is something about callback tasks.
+		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
 	}
 	public function onDisable(){
 		$this->logs->close();
+	}
+	public function opQueue(){
+		while(self::$queue){
+			/** @var array $request */
+			$request = unserialize(array_shift(self::$queue));
+			$id = array_shift($request);
+			switch(array_shift($request)){
+				case self::QUEUE_LOG_GET:
+					/** @var \SQLite3Result $result */
+					$result = call_user_func_array(array($this, "getTransactions"), $request);
+					$data = [];
+					while(($datum = $result->fetchArray(SQLITE3_ASSOC)) !== false){
+						$data[] = $datum;
+					}
+					self::$results[$id] = serialize($data);
+			}
+		}
 	}
 	public function getDefaultBankMoney(){
 		return $this->getConfig()->get("player-default-bank-money");
