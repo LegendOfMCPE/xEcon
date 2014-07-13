@@ -18,7 +18,8 @@ class Account implements InventoryHolder{
 	/** @var DummyInventory */
 	private $inventory;
 	private $maxContainable = 1000;
-	/** @var int[] */
+	private $minAmount = 0;
+//	/** @var int[] */
 //	private $inventoryMoneySlots = [];
 	private $containerTypes = [];
 	/**
@@ -44,6 +45,9 @@ class Account implements InventoryHolder{
 	}
 	public function setMaxContainable($cnt){
 		$this->maxContainable = $cnt;
+	}
+	public function setMinAmount($a = 0){
+		$this->minAmount = $a;
 	}
 	public function getName(){
 		return $this->name;
@@ -73,7 +77,7 @@ class Account implements InventoryHolder{
 	 * @return bool
 	 */
 	public function setAmount($amount){
-		if($amount > $this->maxContainable){
+		if($amount > $this->maxContainable or $amount < $this->minAmount){
 			return false;
 		}
 		$this->amount = $amount;
@@ -140,6 +144,9 @@ class Account implements InventoryHolder{
 			return true;
 		}
 		return false;
+	}
+	public function canPay($amount){
+		return ($this->amount - $amount) >= $this->minAmount;
 	}
 	/**
 	 * @return \xecon\entity\Entity
