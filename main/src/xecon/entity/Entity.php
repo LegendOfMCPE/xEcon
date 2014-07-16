@@ -28,8 +28,8 @@ trait Entity{
 		$this->save();
 	}
 	private function init(){
-		$data = json_decode(file_get_contents($this->getFolder()."general.json"));
-		foreach($data["accounts"] as $account=>$data){
+		$gen = json_decode(file_get_contents($this->getFolder()."general.json"));
+		foreach($gen["accounts"] as $account=>$data){
 			$this->accounts[$account] = new Account($account, $data["amount"], $this, $this->getInventory($account));
 			$this->accounts[$account]->setMaxContainable($data["max-containable"]);
 		}
@@ -52,10 +52,14 @@ trait Entity{
 	protected function getFolderByName($name){
 		return $this->main->getEntDir().$this->getAbsolutePrefix()."@#@!%".$name;
 	}
-	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0){
+	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0, $override = true){
+		if(!$override and isset($this->accounts[$name])){
+			return false;
+		}
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this, $this->getInventory($name));
 		$this->accounts[$name]->setMaxContainable($maxContainable);
 		$this->accounts[$name]->setMinAmount($minAmount);
+		return true;
 	}
 	protected function addLiability($name, $maxAmount, $default = 0){
 		$this->liabilities[$name] = new Account($name, $default, $this, null);
