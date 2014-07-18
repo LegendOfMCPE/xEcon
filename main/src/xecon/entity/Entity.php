@@ -53,6 +53,7 @@ trait Entity{
 		return $this->main->getEntDir().$this->getAbsolutePrefix()."@#@!%".$name;
 	}
 	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0){
+		$name = strtolower($name);
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this, $this->getInventory($name));
 		$this->accounts[$name]->setMaxContainable($maxContainable);
 		$this->accounts[$name]->setMinAmount($minAmount);
@@ -78,6 +79,7 @@ trait Entity{
 	 * @return bool|Account
 	 */
 	public function getAccount($name){
+		$name = strtolower($name);
 		return isset($this->accounts[$name]) ? $this->accounts[$name]:false;
 	}
 	public function getAccounts(){
