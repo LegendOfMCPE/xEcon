@@ -25,7 +25,7 @@ class Main extends PluginBase implements Listener{
 	const QUEUE_LOG_GET = "GET";
 	const QUEUE_LOG_LOG = "PUT";
 	/** @var \WeakRef[] */
-	private $playerEnts = [];
+	private $ents = [];
 	/** @var string[] */
 	public static $queue = [];
 	public static $results = [];
@@ -204,15 +204,23 @@ class Main extends PluginBase implements Listener{
 			$name = $name->getName();
 		}
 		$name = strtolower($name);
-		if(!isset($this->playerEnts[$name])){
-			$this->playerEnts[$name] = new \WeakRef(new PlayerEnt($name, $this));
+		$realName = $name;
+		$name = PlayerEnt::ABSOLUTE_PREFIX."/$name";
+		if(!isset($this->ents[$name])){
+			$this->ents[$name] = new \WeakRef(new PlayerEnt($realName, $this));
 		}
-		return $this->playerEnts[$name]->get();
+		return $this->ents[$name]->get();
+	}
+	public function addEntity(Entity $entity){
+		$this->ents[$entity->getUniqueName()] = new \WeakRef($entity);
+	}
+	public function getEntity($uniqueName){
+		return isset($this->ents[$uniqueName]) ? $this->ents[$uniqueName]->get():false;
 	}
 	public function collectGarbage(){
-		foreach($this->playerEnts as $offset => $ent){
+		foreach($this->ents as $offset => $ent){
 			if(!$ent->valid()){
-				unset($this->playerEnts[$offset]);
+				unset($this->ents[$offset]);
 			}
 		}
 	}

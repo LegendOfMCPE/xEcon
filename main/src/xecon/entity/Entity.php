@@ -3,6 +3,7 @@
 namespace xecon\entity;
 
 use xecon\account\Account;
+use xecon\account\Loan;
 use xecon\Main;
 
 trait Entity{
@@ -24,6 +25,7 @@ trait Entity{
 			$this->init();
 		}
 		$this->main = $main;
+		$this->getMain()->addEntity($this);
 	}
 	public function finalize(){
 		$this->save();
@@ -63,11 +65,18 @@ trait Entity{
 		$this->liabilities[$name]->setMaxContainable($maxAmount);
 		$this->liabilities[$name]->setIsLiability(true);
 	}
+	public function addLoan(Account $from, $amount, $due){
+		$loan = new Loan($from, $amount, $this, $due);
+		$this->liabilities[$loan->getName()] = $loan;
+	}
 	public function save(){
 //		file_put_contents($this->folder."hook.json", json_encode(get_class($this)));
 		$data = [];
 		$data["accounts"] = [];
 		foreach($this->accounts as $acc){
+			$data["accounts"][$acc->getName()] = $acc->toArray();
+		}
+		foreach($this->liabilities as $acc){
 			$data["accounts"][$acc->getName()] = $acc->toArray();
 		}
 		file_put_contents($this->folder."general.json", json_encode($data, JSON_PRETTY_PRINT|JSON_BIGINT_AS_STRING));
@@ -92,6 +101,9 @@ trait Entity{
 			$balance -= $l->getAmount();
 		}
 		return $balance;
+	}
+	public function getUniqueName(){
+		return $this->getAbsolutePrefix()."/".$this->getName();
 	}
 	public abstract function getName();
 	public abstract function getAbsolutePrefix();

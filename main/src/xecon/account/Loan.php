@@ -21,6 +21,14 @@ class Loan extends Account{
 		}
 		return new Loan($creditor, $data["amount"], $entity, $data["due"], $name);
 	}
+	/**
+	 * @param Account $creditor
+	 * @param float $amount
+	 * @param Entity $owner
+	 * @param int $due
+	 * @param bool $name
+	 * @throws \BadMethodCallException
+	 */
 	public function __construct(Account $creditor, $amount, Entity $owner, $due, $name = false){
 		if(!($creditor->getEntity() instanceof Service) and !($creditor->getEntity() instanceof PlayerEnt)){
 			throw new \BadMethodCallException("Loan must be provided by a player or a service");

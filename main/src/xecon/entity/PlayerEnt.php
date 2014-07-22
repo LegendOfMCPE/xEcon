@@ -10,6 +10,7 @@ class PlayerEnt{
 	private $player;
 	const ACCOUNT_CASH = "Cash";
 	const ACCOUNT_BANK = "Bank";
+	const ABSOLUTE_PREFIX = "Player";
 	public function __construct($player, Main $main){
 		$this->player = $player;
 		if($player instanceof Player){
@@ -38,7 +39,7 @@ class PlayerEnt{
 		return strtolower($this->player);
 	}
 	public function getAbsolutePrefix(){
-		return "Player";
+		return self::ABSOLUTE_PREFIX;
 	}
 	public function getClass(){
 		return "xecon\\entity\\PlayerEnt";
