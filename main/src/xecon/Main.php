@@ -2,6 +2,8 @@
 
 namespace xecon;
 
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -11,6 +13,7 @@ use xecon\account\Account;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
+use xecon\subcommands\Subcommand;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
@@ -22,6 +25,8 @@ class Main extends PluginBase implements Listener{
 	private $logs;
 	/** @var Service */
 	private $service;
+	/** @var Subcommand[] */
+	private $subcommands = [];
 	const QUEUE_LOG_GET = "GET";
 	const QUEUE_LOG_LOG = "PUT";
 	/** @var \WeakRef[] */
@@ -41,6 +46,26 @@ class Main extends PluginBase implements Listener{
 	}
 	public function onDisable(){
 		$this->logs->close();
+	}
+	public function registerSubcommand(Subcommand $subcommand){
+		$this->subcommands[$subcommand->getName()] = $subcommand;
+		foreach($subcommand->getAliases() as $alias){
+			$this->subcommands[$alias] = $subcommand;
+		}
+	}
+	public function onCommand(CommandSender $sender, Command $command, $alias, array $args){
+		$sub = trim(strtolower(array_shift($args)));
+		if(isset($this->subcommands[$sub])){
+			$this->subcommands[$sub]->execute($sender, $args);
+			return true;
+		}
+		elseif($sub === "help"){
+			// TODO
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 	public function opQueue(){
 		while(self::$queue){
