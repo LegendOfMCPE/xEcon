@@ -23,9 +23,9 @@ class Service{
 		return $this->getAccount($name);
 	}
 	public function getName(){
-		return "Server";
+		return "Services";
 	}
 	public function getAbsolutePrefix(){
-		return "SERVER";
+		return "Server";
 	}
 }

@@ -7,13 +7,18 @@ use xecon\Main;
 
 class PlayerEnt{
 	use Entity;
-	/** @var \pocketmine\Player */
 	private $player;
 	const ACCOUNT_CASH = "Cash";
 	const ACCOUNT_BANK = "Bank";
-	public function __construct(Player $player, Main $main){
+	public function __construct($player, Main $main){
 		$this->player = $player;
-		$this->initializeXEconEntity($this->getFolderByName($player->getName()), $main);
+		if($player instanceof Player){
+			$name = strtolower($player->getName());
+		}
+		else{
+			$name = strtolower($player);
+		}
+		$this->initializeXEconEntity($this->getFolderByName($name), $main);
 	}
 	public function onQuit(){
 		$this->finalize();
@@ -27,7 +32,10 @@ class PlayerEnt{
 		return $this->player;
 	}
 	public function getName(){
-		return strtolower($this->player->getName());
+		if($this->player instanceof Player){
+			return strtolower($this->player->getName());
+		}
+		return strtolower($this->player);
 	}
 	public function getAbsolutePrefix(){
 		return "Player";
@@ -36,6 +44,9 @@ class PlayerEnt{
 		return "xecon\\entity\\PlayerEnt";
 	}
 	public function getInventory($name){
+		if(!($this->player instanceof Player)){
+			return null;
+		}
 		switch($name){
 			case "cash":
 				return $this->player->getInventory();
@@ -44,6 +55,9 @@ class PlayerEnt{
 		}
 	}
 	public function sendMessage($msg){
+		if(!($this->player instanceof Player)){
+			return false;
+		}
 		$this->player->sendMessage($msg);
 		return true;
 	}

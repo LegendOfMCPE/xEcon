@@ -10,18 +10,30 @@ use xecon\entity\Entity;
 
 class Account implements InventoryHolder{
 	/** @var string */
-	private $name;
+	protected $name;
 	/** @var float */
-	private $amount;
+	protected $amount;
 	/** @var Entity */
-	private $entity;
+	protected $entity;
 	/** @var DummyInventory */
-	private $inventory;
-	private $maxContainable = 1000;
-	private $minAmount = 0;
+	protected $inventory;
+	protected $maxContainable = 1000;
+	protected $minAmount = 0;
 //	/** @var int[] */
 //	private $inventoryMoneySlots = [];
 	private $containerTypes = [];
+	private $liability = false;
+	public static function constructFromArray($name, Entity $entity, $data){
+		$constructor = $data["class"]."::constructInstance";
+		return $constructor($name, $entity, $data);
+	}
+	public static function constructInstance($name, Entity $entity, $data){
+		$inst = new Account($name, $data["amount"], $entity);
+		$inst->setMinAmount($data["min-amount"]);
+		$inst->setMaxContainable($data["max-containable"]);
+		$inst->setIsLiability($data["is-liability"]);
+		return $inst;
+	}
 	/**
 	 * @param string $name
 	 * @param float $amount
@@ -51,6 +63,12 @@ class Account implements InventoryHolder{
 	}
 	public function getName(){
 		return $this->name;
+	}
+	public function setIsLiability($bool){
+		$this->liability = $bool;
+	}
+	public function isLiability(){
+		return $this->liability;
 	}
 	public function getAmount(){
 		return $this->amount;
@@ -153,5 +171,22 @@ class Account implements InventoryHolder{
 	 */
 	public function getEntity(){
 		return $this->entity;
+	}
+	public function toArray(){
+		return [
+			"amount" => $this->getAmount(),
+			"max-containable" => $this->getMaxContainable(),
+			"min-amount" => $this->minAmount,
+			"class" => get_class($this),
+		];
+	}
+	/**
+	 * @return int
+	 */
+	public function getMinAmount(){
+		return $this->minAmount;
+	}
+	public function getUniqueName(){
+		return implode("/", $this->entity->getAbsolutePrefix(), $this->entity->getName(), $this->getName());
 	}
 }
