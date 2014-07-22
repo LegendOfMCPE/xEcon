@@ -17,7 +17,7 @@ class Loan extends Account{
 			$creditor = $entity->getMain()->getService()->getAccount($creditor[2]);
 		}
 		elseif(strtolower($creditor[0]) === "player"){
-
+			$creditor = $entity->getMain()->getPlayerEnt($creditor[1])->getAccount($creditor[2]);
 		}
 		return new Loan($creditor, $data["amount"], $entity, $data["due"], $name);
 	}
@@ -37,6 +37,7 @@ class Loan extends Account{
 		$data = parent::toArray();
 		$data["due"] = $this->due;
 		$data["creditor"] = $this->creditor->getUniqueName();
+		return $data;
 	}
 	/**
 	 * @return int

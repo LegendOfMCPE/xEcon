@@ -8,7 +8,7 @@ class Session{
 	/** @var PlayerEnt */
 	private $ent;
 	public function __construct($player, Main $main){
-		$this->ent = new PlayerEnt($player, $main);
+		$this->ent = $main->getPlayerEnt($player);
 	}
 	public function onQuit(){
 		$this->ent->onQuit();

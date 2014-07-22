@@ -21,7 +21,7 @@ class PlayerEnt{
 		$this->initializeXEconEntity($this->getFolderByName($name), $main);
 	}
 	public function onQuit(){
-		$this->finalize();
+		$this->save();
 	}
 	public function initDefaultAccounts(){
 		$main = $this->main;
@@ -60,5 +60,8 @@ class PlayerEnt{
 		}
 		$this->player->sendMessage($msg);
 		return true;
+	}
+	public function __destruct(){
+		$this->save();
 	}
 }

@@ -9,6 +9,7 @@ use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use xecon\account\Account;
 use xecon\entity\Entity;
+use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\utils\CallbackPluginTask;
 
@@ -23,6 +24,8 @@ class Main extends PluginBase implements Listener{
 	private $service;
 	const QUEUE_LOG_GET = "GET";
 	const QUEUE_LOG_LOG = "PUT";
+	/** @var \WeakRef[] */
+	private $playerEnts = [];
 	/** @var string[] */
 	public static $queue = [];
 	public static $results = [];
@@ -33,6 +36,7 @@ class Main extends PluginBase implements Listener{
 		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
 		$this->service = new Service($this);
 		// TODO I remember I wanted to do something here, but after chasing a few PocketMine-MP bugs, I forgot it. :( I made this mark here to remind ourselves that we should add something here. It is something about callback tasks.
+		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "collectGarbage")), 200, 200);
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
 	}
 	public function onDisable(){
@@ -89,9 +93,6 @@ class Main extends PluginBase implements Listener{
 	}
 	public function getSession(Player $player){
 		return $this->sessions[$player->getID()];
-	}
-	public function getPlayerEntity(Player $player){
-		return $this->sessions[$this->CID($player)]->getEntity();
 	}
 	public function getLogs(){
 		return $this->logs;
@@ -192,6 +193,28 @@ class Main extends PluginBase implements Listener{
 			$op->bindValue(":toaccount", $toAccount);
 		}
 		return $op->execute();
+	}
+	/**
+	 * @param $name
+	 * @return PlayerEnt
+	 */
+	public function getPlayerEnt($name){
+		$this->collectGarbage();
+		if($name instanceof Player){
+			$name = $name->getName();
+		}
+		$name = strtolower($name);
+		if(!isset($this->playerEnts[$name])){
+			$this->playerEnts[$name] = new \WeakRef(new PlayerEnt($name, $this));
+		}
+		return $this->playerEnts[$name]->get();
+	}
+	public function collectGarbage(){
+		foreach($this->playerEnts as $offset => $ent){
+			if(!$ent->valid()){
+				unset($this->playerEnts[$offset]);
+			}
+		}
 	}
 	public static function CID(Player $player){
 		return $player->getID();
