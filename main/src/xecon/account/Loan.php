@@ -44,6 +44,9 @@ class Loan extends Account{
 		$this->due = $due;
 		$this->creditor = $creditor;
 	}
+	public function setName($name){
+		$this->name = $name;
+	}
 	public function toArray(){
 		$data = parent::toArray();
 		$data["due"] = $this->due;
