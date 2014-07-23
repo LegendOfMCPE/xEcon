@@ -14,6 +14,8 @@ class Loan extends Account{
 	/** @var int */
 	protected $creation;
 	protected $increasePerHour;
+	protected $lastInterestUpdate;
+	protected $originalAmount;
 	public static function constructInstance($name, Entity $entity, $data){
 		$creditor = explode("/", $data["creditor"]);
 		if(strtolower($creditor[0]) === "server" and strtolower(substr($creditor[1], 0, 7)) === "service"){
@@ -22,7 +24,7 @@ class Loan extends Account{
 		elseif(strtolower($creditor[0]) === "player"){
 			$creditor = $entity->getMain()->getPlayerEnt($creditor[1])->getAccount($creditor[2]);
 		}
-		return new Loan($creditor, $data["amount"], $entity, $data["due"], $data["increase per hour"], $data["creation"], $name);
+		return new Loan($creditor, $data["amount"], $entity, $data["due"], $data["increase per hour"], $name, $data["creation"], $data["original amount"], $data["last interest update"]);
 	}
 	/**
 	 * @param Account $creditor
@@ -30,11 +32,13 @@ class Loan extends Account{
 	 * @param Entity $owner
 	 * @param int $due
 	 * @param number $increasePerHour
-	 * @param int|bool $creation
 	 * @param bool|string $name
+	 * @param int|bool $creation
+	 * @param int|bool $originalAmount
+	 * @param int|bool $lastInterestUpdate
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct(Account $creditor, $amount, Entity $owner, $due, $increasePerHour, $creation = false, $name = false){
+	public function __construct(Account $creditor, $amount, Entity $owner, $due, $increasePerHour, $name = false, $creation = false, $originalAmount = false, $lastInterestUpdate = false){
 		if(!($creditor->getEntity() instanceof Service) and !($creditor->getEntity() instanceof PlayerEnt)){
 			throw new \InvalidArgumentException("Loan must be provided by a player or a service");
 		}
@@ -53,16 +57,21 @@ class Loan extends Account{
 		$this->creation = $creation;
 		$this->creditor = $creditor;
 		$this->increasePerHour = $increasePerHour;
+		$this->lastInterestUpdate = $lastInterestUpdate;
+		$this->originalAmount = $originalAmount;
 	}
 	public function setName($name){
 		$this->name = $name;
 	}
 	public function toArray(){
+		$this->updateInterest();
 		$data = parent::toArray();
 		$data["due"] = $this->due;
 		$data["creditor"] = $this->creditor->getUniqueName();
 		$data["increase per hour"] = $this->increasePerHour;
 		$data["creation"] = $this->creation;
+		$data["original amount"] = $this->originalAmount;
+		$data["last interest update"] = $this->lastInterestUpdate;
 		return $data;
 	}
 	/**
@@ -80,17 +89,36 @@ class Loan extends Account{
 	public function isExpired(){
 		return $this->due < time();
 	}
-	public function getAmount(){
-		$hours = (time() - $this->creation) / 3600;
-		return $this->getOriginalAmount() * pow(1 + $this->increasePerHour / 100, $hours);
-	}
 	public function getOriginalAmount(){
-		return parent::getAmount();
+		return $this->originalAmount;
 	}
 	/**
 	 * @return int
 	 */
 	public function getCreation(){
 		return $this->creation;
+	}
+	public function setAmount($amount){
+		parent::setAmount($amount);
+
+	}
+	public function updateInterest(){
+		$hours = (time() - $this->lastInterestUpdate) / 3600;
+		$this->amount += $hours * $this->increasePerHour;
+	}
+	public function __destruct(){
+		$this->updateInterest();
+	}
+	public function __set($k, $v){
+		if($k === "amount"){
+			$this->updateInterest();
+		}
+		$this->{$k} = $v;
+	}
+	public function __get($k){
+		if($k === "amount"){
+			$this->updateInterest();
+		}
+		return $this->{$k};
 	}
 }
