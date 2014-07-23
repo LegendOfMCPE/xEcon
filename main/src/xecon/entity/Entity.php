@@ -65,8 +65,8 @@ trait Entity{
 		$this->liabilities[$name]->setMaxContainable($maxAmount);
 		$this->liabilities[$name]->setIsLiability(true);
 	}
-	public function addLoan(Account $from, $amount, $due){
-		$loan = new Loan($from, $amount, $this, $due);
+	public function addLoan(Account $from, $amount, $due, $increasePerHour = 0){
+		$loan = new Loan($from, $amount, $this, $due, $increasePerHour);
 		$this->liabilities[$loan->getName()] = $loan;
 	}
 	public function save(){
