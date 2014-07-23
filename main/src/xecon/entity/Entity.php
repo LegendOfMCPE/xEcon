@@ -109,4 +109,7 @@ trait Entity{
 	public abstract function getAbsolutePrefix();
 	public abstract function sendMessage($msg);
 	protected abstract function initDefaultAccounts();
+	public function __destruct(){
+		$this->save();
+	}
 }

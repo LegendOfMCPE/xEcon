@@ -62,7 +62,4 @@ class PlayerEnt{
 		$this->player->sendMessage($msg);
 		return true;
 	}
-	public function __destruct(){
-		$this->save();
-	}
 }
