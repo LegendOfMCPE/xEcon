@@ -100,6 +100,9 @@ trait Entity{
 	public function getAccounts(){
 		return $this->accounts;
 	}
+	public function getLiabilities(){
+		return $this->liabilities;
+	}
 	public function getNetBalance(){ // no idea why I put this here. well, this might get handy later.
 		$balance = 0;
 		foreach($this->accounts as $acc){
