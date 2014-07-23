@@ -52,7 +52,7 @@ trait Entity{
 		return $this->main;
 	}
 	protected function getFolderByName($name){
-		return $this->main->getEntDir().$this->getAbsolutePrefix()."@#@!%".$name;
+		return $this->main->getEntDir().$this->getAbsolutePrefix()."@#@!%".$name."/"; // how could I forget the slash...
 	}
 	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0){
 		$name = strtolower($name);
@@ -80,6 +80,14 @@ trait Entity{
 			$data["accounts"][$acc->getName()] = $acc->toArray();
 		}
 		file_put_contents($this->folder."general.json", json_encode($data, JSON_PRETTY_PRINT|JSON_BIGINT_AS_STRING));
+	}
+	public function delete(){
+		$directory = dir($dir = $this->folder);
+		while(($file = $directory->read()) !== false){
+			unlink($dir.$file);
+		}
+		$directory->close();
+		rmdir($dir);
 	}
 	/**
 	 * @param $name
