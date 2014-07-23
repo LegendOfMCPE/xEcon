@@ -36,6 +36,9 @@ class Loan extends Account{
 		if(!is_string($name)){
 			$name = "Loan from {$creditor->getEntity()->getAbsolutePrefix()} {$creditor->getEntity()->getName()}: {$creditor->getName()}";
 		}
+		for($oname = $name, $i = 2; $owner->getAccount($name) instanceof Account; $i++){
+			$name = "$oname ($i)";
+		}
 		parent::__construct($name, $amount, $owner);
 		$this->setIsLiability(true);
 		$this->due = $due;
