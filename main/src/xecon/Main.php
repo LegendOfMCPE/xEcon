@@ -89,16 +89,19 @@ class Main extends PluginBase implements Listener{
 		}
 	}
 	public function getDefaultBankMoney(){
-		return $this->getConfig()->get("player-default-bank-money");
+		return $this->getConfig()->get("player accont")["default"]["bank"];
 	}
 	public function getDefaultCashMoney(){
-		return $this->getConfig()->get("player-default-cash-money");
+		return $this->getConfig()->get("player accont")["default"]["cash"];
 	}
 	public function getMaxBankMoney(){
-		return $this->getConfig()->get("player-max-bank-money");
+		return $this->getConfig()->get("player accont")["max"]["bank"];
 	}
 	public function getMaxCashMoney(){
-		return $this->getConfig()->get("player-max-cash-money");
+		return $this->getConfig()->get("player accont")["max"]["cash"];
+	}
+	public function isGiveForEachName(){
+		return $this->getConfig()->get("player accont")["default"]["give for each ip"];
 	}
 	private function mkdirs(){
 		@mkdir($this->getDataFolder());
@@ -122,8 +125,13 @@ class Main extends PluginBase implements Listener{
 		if(!($player instanceof Player)){
 			throw new \BadMethodCallException("Main::touchIP() must be provided with a PlayerEnt instance with field \$player as a Player instance");
 		}
-		if(!($this->defaultedIPs->exists($player->getAddress()))){
-
+		if(!($this->defaultedIPs->exists($player->getAddress())) or $this->isGiveForEachName()){
+			$bank = $ent->getAccount(PlayerEnt::ACCOUNT_BANK);
+			$cash = $ent->getAccount(PlayerEnt::ACCOUNT_CASH);
+			$starters = $this->getService()->getService("Starters");
+			$starters->pay($bank, $this->getDefaultBankMoney(), "Initial bank capital");
+			$starters->pay($cash, $this->getDefaultCashMoney(), "Initial cash capital");
+			$player->sendMessage("You have been given your initial capital");
 		}
 	}
 	public function getSessions(){

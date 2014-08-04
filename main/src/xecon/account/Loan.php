@@ -98,13 +98,10 @@ class Loan extends Account{
 	public function getCreation(){
 		return $this->creation;
 	}
-	public function setAmount($amount){
-		parent::setAmount($amount);
-
-	}
 	public function updateInterest(){
 		$hours = (time() - $this->lastInterestUpdate) / 3600;
-		$this->amount += $hours * $this->increasePerHour;
+		$this->amount *= pow(1 + $this->increasePerHour, $hours);
+		$this->lastInterestUpdate = time(); // how could I have forgotten this!
 	}
 	/**
 	 * @return number
@@ -117,9 +114,6 @@ class Loan extends Account{
 	 */
 	public function getCreditor(){
 		return $this->creditor;
-	}
-	public function __destruct(){
-		$this->updateInterest();
 	}
 	public function __set($k, $v){
 		if($k === "amount"){

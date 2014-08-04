@@ -25,10 +25,11 @@ class PlayerEnt{
 	public function onQuit(){
 		$this->save();
 	}
-	public function initDefaultAccounts(){
+	protected function initDefaultAccounts(){
 		$main = $this->main;
-		$this->addAccount(self::ACCOUNT_BANK, $main->getDefaultBankMoney(), $main->getMaxBankMoney());
-		$this->addAccount(self::ACCOUNT_CASH, $main->getDefaultCashMoney(), $main->getMaxCashMoney());
+		$this->addAccount(self::ACCOUNT_BANK, 0, $this->getMain()->getMaxBankMoney()); // TODO overdraft
+		$this->addAccount(self::ACCOUNT_CASH, 0, $this->getMain()->getMaxCashMoney());
+		$main->touchIP($this);
 	}
 	/**
 	 * @return Player|string
