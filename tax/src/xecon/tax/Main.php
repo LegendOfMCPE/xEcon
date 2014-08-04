@@ -5,17 +5,12 @@ namespace xecon\tax;
 use pocketmine\event\Listener;
 use pocketmine\event\plugin\PluginDisableEvent;
 use pocketmine\plugin\PluginBase;
-use xecon\tax\taxes\TaxType;
+use xecon\tax\tax\TaxType;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
 	/** @var \xecon\account\Account */
 	private $service;
-	/** @var TaxType[] */
-	private $types = [];
-	private $compiled = false;
-	/** @var taxes\Tax[] */
-	private $taxes = [];
 	public function onEnable(){
 		/** @var \xecon\Main $xEcon */
 		$xEcon = $this->getServer()->getPluginManager()->getPlugin("xEcon");
