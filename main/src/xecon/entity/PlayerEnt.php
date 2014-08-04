@@ -26,10 +26,9 @@ class PlayerEnt{
 		$this->save();
 	}
 	protected function initDefaultAccounts(){
-		$main = $this->main;
-		$this->addAccount(self::ACCOUNT_BANK, 0, $this->getMain()->getMaxBankMoney()); // TODO overdraft
+		$this->addAccount(self::ACCOUNT_BANK, 0, $this->getMain()->getMaxBankMoney(), -$this->getMain()->getMaxBankOverdraft());
 		$this->addAccount(self::ACCOUNT_CASH, 0, $this->getMain()->getMaxCashMoney());
-		$main->touchIP($this);
+		$this->getMain()->touchIP($this);
 	}
 	/**
 	 * @return Player|string

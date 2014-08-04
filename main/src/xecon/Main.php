@@ -88,6 +88,9 @@ class Main extends PluginBase implements Listener{
 			}
 		}
 	}
+	public function getMaxBankOverdraft(){
+		return $this->getConfig()->get("player account")["bank"]["overdraft"];
+	}
 	public function getDefaultBankMoney(){
 		return $this->getConfig()->get("player accont")["default"]["bank"];
 	}
