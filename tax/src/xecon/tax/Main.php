@@ -5,12 +5,14 @@ namespace xecon\tax;
 use pocketmine\event\Listener;
 use pocketmine\event\plugin\PluginDisableEvent;
 use pocketmine\plugin\PluginBase;
-use xecon\tax\tax\TaxType;
+use xecon\tax\tax\Tax;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
 	/** @var \xecon\account\Account */
 	private $service;
+	/** @var Tax[] */
+	private $taxes = [];
 	public function onEnable(){
 		/** @var \xecon\Main $xEcon */
 		$xEcon = $this->getServer()->getPluginManager()->getPlugin("xEcon");
@@ -36,22 +38,17 @@ class Main extends PluginBase implements Listener{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CollectTaxTask($this), $freq, $freq);
 		$this->getServer()->getScheduler()->scheduleDelayedTask(new CallbackPluginTask($this, array($this, "onPostRegister")), 1); // give other plugins the chance to register
-		$this->registerTaxType(new TaxType("base", "xecon\\tax\\taxes\\BaseTax", $this));
 	}
-	public function registerTaxType(TaxType $type){
-		$this->types[$type->getName()] = $type;
-		if($this->compiled === true){
-			$this->onPostRegister();
-		}
+	public function registerTaxType(Tax $type){
+		$this->taxes[$type->getName()] = $type;
 	}
 	public function onPostRegister(){
-		$this->taxes = [];
 		foreach($this->getConfig()->get("taxes") as $tax){
 			$type = $tax["type"];
-			if(!isset($this->types[$type])){
+			if(!isset($this->taxes[$type])){
 				$this->getLogger()->notice("Tax type \"$type\" not found. The tax will not be loaded this time.");
 			}
-			$this->taxes[] = $this->types[$type]->create($tax);
+			$this->taxes[] = $this->taxes[$type]->init($tax);
 		}
 		$this->getLogger()->info(count($this->taxes)." taxes have been loaded.");
 	}
@@ -62,11 +59,6 @@ class Main extends PluginBase implements Listener{
 		return $this->taxes;
 	}
 	public function onOtherDisable(PluginDisableEvent $event){
-		foreach($this->types as $name => $type){
-			if($type->getPlugin() === $event->getPlugin()){
-				unset($this->types[$name]);
-			}
-		}
 	}
 	/**
 	 * @return \xecon\account\Account
