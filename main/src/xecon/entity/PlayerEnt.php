@@ -7,6 +7,7 @@ use xecon\Main;
 
 class PlayerEnt{
 	use Entity;
+	/** @var Player|string */
 	private $player;
 	const ACCOUNT_CASH = "Cash";
 	const ACCOUNT_BANK = "Bank";
@@ -29,6 +30,9 @@ class PlayerEnt{
 		$this->addAccount(self::ACCOUNT_BANK, $main->getDefaultBankMoney(), $main->getMaxBankMoney());
 		$this->addAccount(self::ACCOUNT_CASH, $main->getDefaultCashMoney(), $main->getMaxCashMoney());
 	}
+	/**
+	 * @return Player|string
+	 */
 	public function getPlayer(){
 		return $this->player;
 	}

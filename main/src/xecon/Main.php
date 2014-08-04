@@ -9,6 +9,7 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\Config;
 use xecon\account\Account;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
@@ -17,6 +18,8 @@ use xecon\subcommands\Subcommand;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
+	const QUEUE_LOG_GET = "GET";
+	const QUEUE_LOG_LOG = "PUT";
 	/** @var string directory where economic entity information is stored */
 	private $edir;
 	/** @var Session[] $sessions */
@@ -27,16 +30,17 @@ class Main extends PluginBase implements Listener{
 	private $service;
 	/** @var Subcommand[] */
 	private $subcommands = [];
-	const QUEUE_LOG_GET = "GET";
-	const QUEUE_LOG_LOG = "PUT";
 	/** @var \WeakRef[] */
 	private $ents = [];
 	/** @var string[] */
 	public static $queue = [];
 	public static $results = [];
+	/** @var Config */
+	private $defaultedIPs;
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->defaultedIPs = new Config($this->getDataFolder()."default-given IPs.list", Config::ENUM);
 		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
 		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
 		$this->service = new Service($this);
@@ -111,6 +115,15 @@ class Main extends PluginBase implements Listener{
 		if(isset($this->sessions[$this->CID($p)])){
 			$this->sessions[$this->CID($p)]->onQuit();
 			unset($this->sessions[$this->CID($p)]);
+		}
+	}
+	public function touchIP(PlayerEnt $ent){
+		$player = $ent->getPlayer();
+		if(!($player instanceof Player)){
+			throw new \BadMethodCallException("Main::touchIP() must be provided with a PlayerEnt instance with field \$player as a Player instance");
+		}
+		if(!($this->defaultedIPs->exists($player->getAddress()))){
+
 		}
 	}
 	public function getSessions(){

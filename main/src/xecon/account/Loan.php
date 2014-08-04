@@ -106,6 +106,18 @@ class Loan extends Account{
 		$hours = (time() - $this->lastInterestUpdate) / 3600;
 		$this->amount += $hours * $this->increasePerHour;
 	}
+	/**
+	 * @return number
+	 */
+	public function getIncreasePerHour(){
+		return $this->increasePerHour;
+	}
+	/**
+	 * @return \xecon\account\Account
+	 */
+	public function getCreditor(){
+		return $this->creditor;
+	}
 	public function __destruct(){
 		$this->updateInterest();
 	}

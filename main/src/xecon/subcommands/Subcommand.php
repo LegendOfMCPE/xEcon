@@ -19,6 +19,9 @@ abstract class Subcommand{
 	public abstract function getUsage();
 	public function execute(CommandSender $sender, array $args){
 		$result = $this->run($sender, $args);
+		if($result === null){
+			return;
+		}
 		if(is_string($result)){
 			$sender->sendMessage($result);
 			return;
