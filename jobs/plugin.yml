@@ -1,0 +1,8 @@
+name: xEcon_Jobs
+author: LegendOfMCPE
+prefix: Jobs
+version: 0.0.0
+api: [1.0.0]
+main: xecon\jobs\Jobs
+depend: xEcon
+loadbefore: xEcon_Tax

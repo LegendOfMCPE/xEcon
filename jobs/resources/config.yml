@@ -1,0 +1,8 @@
+---
+jobs:
+  miner:
+    job: BREAK block[id=1]
+    salary: 0
+  job_name:
+    action:
+...

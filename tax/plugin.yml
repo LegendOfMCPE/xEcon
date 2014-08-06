@@ -1,7 +1,8 @@
 name: xEcon_Tax
-prefix: xEcon Tax
-version: 0.0
+author: LegendOfMCPE
+prefix: Tax
+version: 0.0.0
 api: [1.0.0]
-main: xecon\tax
+main: xecon\tax\Main
 depend: xEcon
 softdepend: xEcon_Jobs
