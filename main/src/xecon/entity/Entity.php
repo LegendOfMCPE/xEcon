@@ -7,43 +7,19 @@ use xecon\account\Loan;
 use xecon\Main;
 
 trait Entity{
-	/** @var string */
-	private $folder;
 	/** @var Account[] */
 	protected $accounts = [];
-	/** @var Account[] */
-	protected $liabilities = [];
+	/** @var Loan[] */
 	protected $loans = [];
 	/** @var Main */
 	protected $main;
-	protected function initializeXEconEntity($folder, Main $main){
-		$this->folder = $folder;
-		if(!is_dir($folder)){
-			$this->initAsDefault();
-		}
-		else{
-			$this->init();
-		}
+	protected function initializeXEconEntity(Main $main){
 		$this->main = $main;
+		$this->main->getDataProvider()->loadEntity($this);
 		$this->getMain()->addEntity($this);
-	}
-	public function finalize(){
-		$this->save();
-	}
-	private function init(){
-		$data = json_decode(file_get_contents($this->getFolder()."general.json"));
-		foreach($data["accounts"] as $account=>$data){
-			$this->accounts[$account] = Account::constructFromArray($account, $this, $data);
-		}
-	}
-	private function initAsDefault(){
-		$this->initDefaultAccounts();
 	}
 	public function getInventory($account){
 		return $this->accounts[$account]->getInventory();
-	}
-	public function getFolder(){
-		return $this->folder;
 	}
 	/**
 	 * @return Main
@@ -51,43 +27,21 @@ trait Entity{
 	public function getMain(){
 		return $this->main;
 	}
-	protected function getFolderByName($name){
-		return $this->main->getEntDir().$this->getAbsolutePrefix()."@#@!%".$name."/"; // how could I forget the slash...
-	}
 	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0){
 		$name = strtolower($name);
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this);
 		$this->accounts[$name]->setMaxContainable($maxContainable);
 		$this->accounts[$name]->setMinAmount($minAmount);
 	}
-	protected function addLiability($name, $maxAmount, $default = 0){
-		$this->liabilities[$name] = new Account($name, $default, $this, null);
-		$this->liabilities[$name]->setMaxContainable($maxAmount);
-		$this->liabilities[$name]->setIsLiability(true);
-	}
 	public function addLoan(Account $from, $amount, $due, $increasePerHour = 0){
 		$loan = new Loan($from, $amount, $this, $due, $increasePerHour);
-		$this->liabilities[$loan->getName()] = $loan;
+		$this->loans[$loan->getName()] = $loan;
 	}
-	public function save(){
-//		file_put_contents($this->folder."hook.json", json_encode(get_class($this)));
-		$data = [];
-		$data["accounts"] = [];
-		foreach($this->accounts as $acc){
-			$data["accounts"][$acc->getName()] = $acc->toArray();
-		}
-		foreach($this->liabilities as $acc){
-			$data["accounts"][$acc->getName()] = $acc->toArray();
-		}
-		file_put_contents($this->folder."general.json", json_encode($data, JSON_PRETTY_PRINT|JSON_BIGINT_AS_STRING));
+	public function addLoanRaw(Loan $loan){
+		$this->loans[$loan->getName()] = $loan;
 	}
 	public function delete(){
-		$directory = dir($dir = $this->folder);
-		while(($file = $directory->read()) !== false){
-			unlink($dir.$file);
-		}
-		$directory->close();
-		rmdir($dir);
+		$this->getMain()->getDataProvider()->deleteEntity($this->getUniqueName());
 	}
 	/**
 	 * @param $name
@@ -100,15 +54,15 @@ trait Entity{
 	public function getAccounts(){
 		return $this->accounts;
 	}
-	public function getLiabilities(){
-		return $this->liabilities;
+	public function getLoans(){
+		return $this->loans;
 	}
 	public function getNetBalance(){ // no idea why I put this here. well, this might get handy later.
 		$balance = 0;
 		foreach($this->accounts as $acc){
 			$balance += $acc->getAmount();
 		}
-		foreach($this->liabilities as $l){
+		foreach($this->loans as $l){
 			$balance -= $l->getAmount();
 		}
 		return $balance;
@@ -122,5 +76,8 @@ trait Entity{
 	protected abstract function initDefaultAccounts();
 	public function __destruct(){
 		$this->save();
+	}
+	public function save(){
+		$this->getMain()->getDataProvider()->saveEntity($this);
 	}
 }

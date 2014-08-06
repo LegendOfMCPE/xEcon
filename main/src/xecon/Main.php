@@ -32,11 +32,10 @@ class Main extends PluginBase implements Listener{
 	private $subcommands = [];
 	/** @var \WeakRef[] */
 	private $ents = [];
-	/** @var string[] */
-	public static $queue = [];
-	public static $results = [];
 	/** @var Config */
 	private $defaultedIPs;
+	/** @var \xecon\provider\DataProvider */
+	private $dataProvider;
 	public function onEnable(){
 		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -69,23 +68,6 @@ class Main extends PluginBase implements Listener{
 		}
 		else{
 			return false;
-		}
-	}
-	public function opQueue(){
-		while(self::$queue){
-			/** @var array $request */
-			$request = unserialize(array_shift(self::$queue));
-			$id = array_shift($request);
-			switch(array_shift($request)){
-				case self::QUEUE_LOG_GET:
-					/** @var \SQLite3Result $result */
-					$result = call_user_func_array(array($this, "getTransactions"), $request);
-					$data = [];
-					while(($datum = $result->fetchArray(SQLITE3_ASSOC)) !== false){
-						$data[] = $datum;
-					}
-					self::$results[$id] = serialize($data);
-			}
 		}
 	}
 	public function getMaxBankOverdraft(){
@@ -243,6 +225,9 @@ class Main extends PluginBase implements Listener{
 		}
 		return $op->execute();
 	}
+	public function getDataProvider(){
+		// TODO
+	}
 	/**
 	 * @param $name
 	 * @return PlayerEnt
@@ -256,7 +241,7 @@ class Main extends PluginBase implements Listener{
 		$realName = $name;
 		$name = PlayerEnt::ABSOLUTE_PREFIX."/$name";
 		if(!isset($this->ents[$name])){
-			$this->ents[$name] = new \WeakRef(new PlayerEnt($realName, $this));
+			new PlayerEnt($realName, $this); // It will automatically register to addEntity() in the constructor
 		}
 		return $this->ents[$name]->get();
 	}

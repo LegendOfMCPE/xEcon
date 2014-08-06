@@ -45,15 +45,13 @@ class Debt extends PlayerSubcommand{
 					"total" => ["total (\$)"],
 				];
 				$cnt = 1;
-				foreach($entity->getLiabilities() as $loan){
-					if($loan instanceof Loan){
-						$list["amount"][] = (string) $loan->getOriginalAmount();
-						$list["create"][] = date("M j, y H:i", $loan->getCreation());
-						$list["due"][] = date("M j, y H:i", $loan->getDue());
-						$list["interest"][] = $loan->getIncreasePerHour();
-						$list["total"][] = $loan->getAmount();
-						$cnt++;
-					}
+				foreach($entity->getLoans() as $loan){
+					$list["amount"][] = (string) $loan->getOriginalAmount();
+					$list["create"][] = date("M j, y H:i", $loan->getCreation());
+					$list["due"][] = date("M j, y H:i", $loan->getDue());
+					$list["interest"][] = $loan->getIncreasePerHour();
+					$list["total"][] = $loan->getAmount();
+					$cnt++;
 				}
 				$clist = $list;
 				foreach($list as $col => $data){

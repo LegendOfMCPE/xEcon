@@ -14,16 +14,10 @@ class PlayerEnt{
 	const ABSOLUTE_PREFIX = "Player";
 	public function __construct($player, Main $main){
 		$this->player = $player;
-		if($player instanceof Player){
-			$name = strtolower($player->getName());
-		}
-		else{
-			$name = strtolower($player);
-		}
-		$this->initializeXEconEntity($this->getFolderByName($name), $main);
+		$this->initializeXEconEntity($main);
 	}
 	public function onQuit(){
-		$this->save();
+//		$this->save();
 	}
 	protected function initDefaultAccounts(){
 		$this->addAccount(self::ACCOUNT_BANK, 0, $this->getMain()->getMaxBankMoney(), -$this->getMain()->getMaxBankOverdraft());
@@ -64,6 +58,22 @@ class PlayerEnt{
 			return false;
 		}
 		$this->player->sendMessage($msg);
+		return true;
+	}
+	public function hasInstance(){
+		return ($this->player instanceof Player);
+	}
+	public function release(){ // WeakRef functions :P
+		$this->player = $this->player->getName();
+	}
+	public function acquire(Player $player = null){ // WeakRef functions :P
+		if($player === null){
+			$player = $this->getMain()->getServer()->getPlayerExact($this->getName());
+			if(!($player instanceof Player)){
+				return false;
+			}
+		}
+		$this->player = $player;
 		return true;
 	}
 }

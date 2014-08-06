@@ -16,16 +16,16 @@ class Loan extends Account{
 	protected $increasePerHour;
 	protected $lastInterestUpdate;
 	protected $originalAmount;
-	public static function constructInstance($name, Entity $entity, $data){
-		$creditor = explode("/", $data["creditor"]);
-		if(strtolower($creditor[0]) === "server" and strtolower(substr($creditor[1], 0, 7)) === "service"){
-			$creditor = $entity->getMain()->getService()->getAccount($creditor[2]);
-		}
-		elseif(strtolower($creditor[0]) === "player"){
-			$creditor = $entity->getMain()->getPlayerEnt($creditor[1])->getAccount($creditor[2]);
-		}
-		return new Loan($creditor, $data["amount"], $entity, $data["due"], $data["increase per hour"], $name, $data["creation"], $data["original amount"], $data["last interest update"]);
-	}
+//	public static function constructInstance($name, Entity $entity, $data){
+//		$creditor = explode("/", $data["creditor"]);
+//		if(strtolower($creditor[0]) === "server" and strtolower(substr($creditor[1], 0, 7)) === "service"){
+//			$creditor = $entity->getMain()->getService()->getAccount($creditor[2]);
+//		}
+//		elseif(strtolower($creditor[0]) === "player"){
+//			$creditor = $entity->getMain()->getPlayerEnt($creditor[1])->getAccount($creditor[2]);
+//		}
+//		return new Loan($creditor, $data["amount"], $entity, $data["due"], $data["increase per hour"], $name, $data["creation"], $data["original amount"], $data["last interest update"]);
+//	}
 	/**
 	 * @param Account $creditor
 	 * @param float $amount
@@ -52,6 +52,7 @@ class Loan extends Account{
 			$name = "$oname ($i)";
 		}
 		parent::__construct($name, $amount, $owner);
+		$this->setMaxContainable(PHP_INT_MAX);
 		$this->setIsLiability(true);
 		$this->due = $due;
 		$this->creation = $creation;
@@ -63,17 +64,17 @@ class Loan extends Account{
 	public function setName($name){
 		$this->name = $name;
 	}
-	public function toArray(){
-		$this->updateInterest();
-		$data = parent::toArray();
-		$data["due"] = $this->due;
-		$data["creditor"] = $this->creditor->getUniqueName();
-		$data["increase per hour"] = $this->increasePerHour;
-		$data["creation"] = $this->creation;
-		$data["original amount"] = $this->originalAmount;
-		$data["last interest update"] = $this->lastInterestUpdate;
-		return $data;
-	}
+//	public function toArray(){
+//		$this->updateInterest();
+//		$data = parent::toArray();
+//		$data["due"] = $this->due;
+//		$data["creditor"] = $this->creditor->getUniqueName();
+//		$data["increase per hour"] = $this->increasePerHour;
+//		$data["creation"] = $this->creation;
+//		$data["original amount"] = $this->originalAmount;
+//		$data["last interest update"] = $this->lastInterestUpdate;
+//		return $data;
+//	}
 	/**
 	 * @return int
 	 */
@@ -101,6 +102,13 @@ class Loan extends Account{
 	public function updateInterest(){
 		$hours = (time() - $this->lastInterestUpdate) / 3600;
 		$this->amount *= pow(1 + $this->increasePerHour, $hours);
+		/*
+		 * TODO Fix the compound interest issue.
+		 * I'm pretty sure server owners won't like players compounding their accounts
+		 * to get a few dollars of profit by crazily depositing.
+		 *
+		 * HELP NEEDED!
+		 */
 		$this->lastInterestUpdate = time(); // how could I have forgotten this!
 	}
 	/**
@@ -126,5 +134,12 @@ class Loan extends Account{
 			$this->updateInterest();
 		}
 		return $this->{$k};
+	}
+	/**
+	 * @return bool|int
+	 */
+	public function getLastInterestUpdate(){
+		$this->updateInterest();
+		return $this->lastInterestUpdate;
 	}
 }
