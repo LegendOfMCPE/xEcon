@@ -8,20 +8,18 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
+use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
 use xecon\account\Account;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
+use xecon\provider\JSONDataProvider;
+use xecon\provider\MysqliDataProvider;
 use xecon\subcommands\Subcommand;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
-	const QUEUE_LOG_GET = "GET";
-	const QUEUE_LOG_LOG = "PUT";
-	/** @var string directory where economic entity information is stored */
-	private $edir;
 	/** @var Session[] $sessions */
 	private $sessions = [];
 	/** @var \SQLite3 */
@@ -32,23 +30,51 @@ class Main extends PluginBase implements Listener{
 	private $subcommands = [];
 	/** @var \WeakRef[] */
 	private $ents = [];
-	/** @var Config */
-	private $defaultedIPs;
 	/** @var \xecon\provider\DataProvider */
 	private $dataProvider;
+	/** @var \mysqli|null */
+	private $universalMysqli = null;
 	public function onEnable(){
-		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-		$this->defaultedIPs = new Config($this->getDataFolder()."default-given IPs.list", Config::ENUM);
+		$data = $this->getConfig()->get("data provider");
+		switch($name = strtolower($data["name"])){
+			case "sqlite3":
+				// TODO
+				break;
+			case "disk":
+				$this->dataProvider = new JSONDataProvider($this, $data[$name]);
+				break;
+			case "mysqli":
+				if($data[$name]["use universal"]){
+					$db = $this->getUniversalMysqliDatabase($this);
+					if($db === null){
+						return;
+					}
+				}
+				else{
+					$details = $data[$name]["connection details"];
+					$db = new \mysqli($details["host"], $details["username"], $details["password"], $details["database"], $details["port"]);
+					if($db->connect_error){
+						$this->getLogger()->critical("Unable to connect to core MySQL database! Reason: ".$db->connect_error);
+						$this->getLogger()->critical("Disabling due to required core MySQL database not connectable.");
+						$this->getLogger()->critical("Try changing the data provider type or fixing the connection details.");
+						$this->getPluginLoader()->disablePlugin($this);
+					}
+				}
+				$this->dataProvider = new MysqliDataProvider($this, $db, $data[$name]);
+		}
 		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
 		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
 		$this->service = new Service($this);
-		// TODO I remember I wanted to do something here, but after chasing a few PocketMine-MP bugs, I forgot it. :( I made this mark here to remind ourselves that we should add something here. It is something about callback tasks.
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "collectGarbage")), 200, 200);
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
 	}
 	public function onDisable(){
 		$this->logs->close();
+		$this->dataProvider->close();
+		if($this->universalMysqli instanceof \mysqli){
+			$this->universalMysqli->close(); // disable dependencies too
+		}
 	}
 	public function registerSubcommand(Subcommand $subcommand){
 		$this->subcommands[$subcommand->getName()] = $subcommand;
@@ -70,6 +96,27 @@ class Main extends PluginBase implements Listener{
 			return false;
 		}
 	}
+	public function getUniversalMysqliDatabase(Plugin $ctx, $disableOnFailure = true){
+		if(!($this->universalMysqli instanceof \mysqli)){
+			$data = $this->getConfig()->get("universal mysqli database")["connection details"];
+			$this->universalMysqli = new \mysqli($data["host"], $data["username"], $data["password"], $data["database"], $data["port"]);
+			if($this->universalMysqli->connect_error){
+				$ctx->getLogger()->critical("Failed to connect to the xEcon universal MySQL database! Reason: ".$this->universalMysqli->connect_error);
+				if($disableOnFailure){
+					if($ctx !== $this){
+						$desc = $ctx->getDescription();
+						$this->getLogger()->critical("Disabling ".$desc->getFullName()." by ".implode(", ", $desc->getAuthors())." because the required universal MySQL database cannot be connected to.");
+					}
+					else{
+						$this->getLogger()->critical("Disabling due to required universal MySQL database not connectable.");
+					}
+					$ctx->getPluginLoader()->disablePlugin($ctx);
+				}
+				$this->universalMysqli = null;
+			}
+		}
+		return $this->universalMysqli;
+	}
 	public function getMaxBankOverdraft(){
 		return $this->getConfig()->get("player account")["bank"]["overdraft"];
 	}
@@ -88,13 +135,6 @@ class Main extends PluginBase implements Listener{
 	public function isGiveForEachName(){
 		return $this->getConfig()->get("player accont")["default"]["give for each ip"];
 	}
-	private function mkdirs(){
-		@mkdir($this->getDataFolder());
-		@mkdir($this->edir = $this->getDataFolder()."entities database/");
-	}
-	public function getEntDir(){
-		return $this->edir;
-	}
 	public function onJoin(PlayerJoinEvent $evt){
 		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer(), $this);
 	}
@@ -103,20 +143,6 @@ class Main extends PluginBase implements Listener{
 		if(isset($this->sessions[$this->CID($p)])){
 			$this->sessions[$this->CID($p)]->onQuit();
 			unset($this->sessions[$this->CID($p)]);
-		}
-	}
-	public function touchIP(PlayerEnt $ent){
-		$player = $ent->getPlayer();
-		if(!($player instanceof Player)){
-			throw new \BadMethodCallException("Main::touchIP() must be provided with a PlayerEnt instance with field \$player as a Player instance");
-		}
-		if(!($this->defaultedIPs->exists($player->getAddress())) or $this->isGiveForEachName()){
-			$bank = $ent->getAccount(PlayerEnt::ACCOUNT_BANK);
-			$cash = $ent->getAccount(PlayerEnt::ACCOUNT_CASH);
-			$starters = $this->getService()->getService("Starters");
-			$starters->pay($bank, $this->getDefaultBankMoney(), "Initial bank capital");
-			$starters->pay($cash, $this->getDefaultCashMoney(), "Initial cash capital");
-			$player->sendMessage("You have been given your initial capital");
 		}
 	}
 	public function getSessions(){
@@ -226,7 +252,7 @@ class Main extends PluginBase implements Listener{
 		return $op->execute();
 	}
 	public function getDataProvider(){
-		// TODO
+		return $this->dataProvider;
 	}
 	/**
 	 * @param $name

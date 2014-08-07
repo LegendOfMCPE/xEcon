@@ -1,4 +1,5 @@
 ---
+# Configures the details of a player account
 player account:
   default:
     # to avoid getting a lot of money using new accounts and /pay
@@ -11,4 +12,56 @@ player account:
   bank:
     # set how much money below $0 can a bank account have
     overdraft: 10 # this makes a bank account always have at least -$10
+
+# Configures the data provider that provides data of accounts and the IPs that have received default money (if "give for each ip" is set to true))
+data provider:
+  # The name of the data provider (case-insensitive)
+  # Options:
+  # SQLite3 (creates an SQLite3 database on the disk to save accounts)
+  # Disk (creates one JSON file for each economic entity (e.g. a player, etc.) and a LIST file that stores the IPs that have received default money (if "give for each ip" is set to true))
+  # MySQLi (connects to a remote MySQL database using the PHP MySQLi extension and create a table there to save data)
+  name: Disk
+  # Configure the data provider if you chose that data provider
+
+  # The paths are the path after the plugin folder. Subdirectories, if necessary, would be automatically created.
+  # For example, if the plugin folder is PocketMine-MP/plugins/xEcon,
+  # the following examples:
+  # "entities/<type>/<name>.json" => "PocketMine-MP/plugins/xEcon/entities/<type>/<name>.json"
+  # "../../xecon/data/database.sq3" => "PocketMine-MP/xecon/data/database.sq3"
+  # <xxx> will be replaced by an actual text if applicable.
+  disk:
+    list path: registered-ips.list
+    entities path: entities/<type>$<name>.json
+    # If this is set to true, the JSON file will be formatted such that unnecessary spaces and newlines
+    # will be inserted to increase readability.
+    # You may want to disable this if you are going to have a lot of economic entities
+    # but don't want to use so much disk space.
+    pretty print: true
+  sqlite3:
+    database path: database.sq3
+    # All tables names in the SQLite3 database used by xEcon API will start with this. Leave blank ("") if unnecessary.
+    table name prefix: xecon_core_
+  mysqli:
+    # All tables names in the MySQL database used by xEcon API will start with this. Leave blank ("") if unnecessary.
+    table name prefix: xecon_core_
+    # choose whether to use the xEcon universal MySQL database
+    use universal: true
+    # if you don't use the xEcon universal MySQL database, configure this.
+    connection details:
+      host: example.com
+      username: "anonymous"
+      password: "123456AintGoodPassword"
+      database: "xEcon"
+      port: 3306
+
+# For every component of xEcon (the API and plugins that depend on it),
+# if "use-universal-database" is set to true, this database will be applied.
+# Configure this if you want to use the same connection to your database instead of many.
+universal mysqli database:
+  connection details:
+    host: example.com
+    username: "anonymous"
+    password: "123456AintGoodPassword"
+    database: "xEcon"
+    port: 3306
 ...

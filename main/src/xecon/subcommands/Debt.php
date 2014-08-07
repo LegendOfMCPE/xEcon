@@ -3,8 +3,8 @@
 namespace xecon\subcommands;
 
 use pocketmine\Player;
-use xecon\account\Loan;
 use xecon\entity\Entity;
+use xecon\entity\Service;
 
 class Debt extends PlayerSubcommand{
 	public function getName(){
@@ -33,7 +33,7 @@ class Debt extends PlayerSubcommand{
 				$amount = $args[0];
 				$due = $loanData["due"] * 3600 + time();
 				$interest = $loanData["interest"];
-				$entity->addLoan($this->getMain()->getService()->getService("BankLoanSource"), $amount, $due, $interest);
+				$entity->addLoan($this->getMain()->getService()->getService(Service::ACCOUNT_LOANS), $amount, $due, $interest);
 				return "\$$amount of loan has been taken.";
 			case "view":
 				$output = "Your loans: (current time is ".date("M j, y H:i").")\n";

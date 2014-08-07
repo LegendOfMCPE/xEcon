@@ -8,6 +8,8 @@ class Service{
 	use Entity;
 	const TYPE = "Server";
 	const NAME = "Services";
+	const ACCOUNT_OPS = "Operators";
+	const ACCOUNT_LOANS = "BankLoanSource";
 	public function __construct(Main $main){
 		$this->initializeXEconEntity($main);
 	}
@@ -17,7 +19,6 @@ class Service{
 	public function initDefaultAccounts(){
 		$this->addAccount("Operators", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);
 		$this->addAccount("BankLoanSource", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);
-		$this->addAccount("Starters", PHP_INT_MAX);
 	}
 	public function registerService($name){
 		$this->addAccount($name, (int) ceil(PHP_INT_MAX / 2));

@@ -2,23 +2,24 @@
 
 namespace xecon\provider;
 
+use pocketmine\utils\Config;
 use xecon\account\Loan;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\Main;
 
-class JSONDataProvider{
-	use DataProvider{
-		__construct as dp_constructor;
-	}
+class JSONDataProvider extends DataProvider{
 	/** @var string */
 	private $path;
 	/** @var boolean */
 	private $pretty;
+	/** @var Config */
+	private $ipList;
 	public function __construct(Main $main, array $args){
-		$this->dp_constructor($main);
+		parent::__construct($main);
 		$this->path = $args["path"];
+		$this->ipList = new Config($main->getDataFolder().$args["list path"], Config::ENUM);
 		$this->pretty = $args["pretty print"];
 	}
 	public function getPath(Entity $entity){
@@ -45,8 +46,10 @@ class JSONDataProvider{
 					$from = $this->getMain()->getPlayerEnt($from["name"])->getAccount($from["account"]);
 					break;
 				case Service::TYPE:
-					$from = $this->getMain()->getService()->getService($from["account"]);
-					break;
+					if($from["name"] === Service::NAME){
+						$from = $this->getMain()->getService()->getService($from["account"]);
+						break;
+					}
 				default:
 					throw new \RuntimeException("Unsupported creditor type: ".$from["type"]);
 			}
@@ -87,5 +90,12 @@ class JSONDataProvider{
 	public function deleteEntity($name){
 		$path = str_replace(["<type>", "<name>"], explode("/", $name), $this->path);
 		return @unlink($this->getMain()->getDataFolder().$path);
+	}
+	public function touchIP($ip){
+		if(!$this->ipList->exists($ip)){
+			$this->ipList->set($ip);
+			return false;
+		}
+		return true;
 	}
 }
