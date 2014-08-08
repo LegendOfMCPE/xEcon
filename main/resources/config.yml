@@ -39,8 +39,6 @@ data provider:
     pretty print: true
   sqlite3:
     database path: database.sq3
-    # All tables names in the SQLite3 database used by xEcon API will start with this. Leave blank ("") if unnecessary.
-    table name prefix: xecon_core_
   mysqli:
     # All tables names in the MySQL database used by xEcon API will start with this. Leave blank ("") if unnecessary.
     table name prefix: xecon_core_

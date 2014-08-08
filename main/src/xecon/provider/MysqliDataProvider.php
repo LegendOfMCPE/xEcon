@@ -108,7 +108,7 @@ class MysqliDataProvider extends DataProvider{
 				ent_name = '{$this->db->escape_string($entity->getName())}';");
 		$data = $result->fetch_assoc();
 		$result->close();
-		if(!($exists = is_array($data))){
+		if(!(is_array($data))){
 			$this->db->query("INSERT INTO {$this->mtn} VALUES (
 					'{$this->db->escape_string($entity->getAbsolutePrefix())}',
 					'{$this->db->escape_string($entity->getName())}',
@@ -118,64 +118,40 @@ class MysqliDataProvider extends DataProvider{
 		}
 		else{
 			$this->db->query("UPDATE {$this->mtn} SET last_modify=UNIX_TIMESTAMP() WHERE
-				ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
-				ent_name = '{$this->db->escape_string($entity->getName())}';");
+					ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
+					ent_name = '{$this->db->escape_string($entity->getName())}';");
 		}
+		$this->db->query("DELETE FROM {$this->atn} WHERE
+					ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
+					ent_name = '{$this->db->escape_string($entity->getName())}';");
 		foreach($entity->getAccounts() as $acc){
-			if($exists){
-				$this->db->query("UPDATE {$this->atn}
-						SET
-						amount = {$acc->getAmount()},
-						max_containable = {$acc->getMaxContainable()},
-						min_amount = {$acc->getMinAmount()}
-						WHERE
-						ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
-						ent_name = '{$this->db->escape_string($entity->getName())}' AND
-						name = '{$this->db->escape_string($acc->getName())}';");
-			}
-			else{
-				$this->db->query("INSERT INTO {$this->atn} VALUES (
-						'{$this->db->escape_string($entity->getAbsolutePrefix())}',
-						'{$this->db->escape_string($entity->getName())}',
-						'{$this->db->escape_string($acc->getName())}',
-						{$acc->getAmount()},
-						{$acc->getMaxContainable()},
-						{$acc->getMinAmount()}
-						);");
-			}
+			$this->db->query("INSERT INTO {$this->atn} VALUES (
+					'{$this->db->escape_string($entity->getAbsolutePrefix())}',
+					'{$this->db->escape_string($entity->getName())}',
+					'{$this->db->escape_string($acc->getName())}',
+					{$acc->getAmount()},
+					{$acc->getMaxContainable()},
+					{$acc->getMinAmount()}
+					);");
 		}
+		$this->db->query("DELETE FROM {$this->ltn} WHERE
+					ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
+					ent_name = '{$this->db->escape_string($entity->getName())}';");
 		foreach($entity->getLoans() as $loan){
-			if($exists){
-				$this->db->query("UPDATE {$this->ltn}
-						SET
-						amount = {$loan->getAmount()},
-						due = {$loan->getDue()},
-						increase_per_hour = {$loan->getIncreasePerHour()},
-						creation = {$loan->getCreation()},
-						original_amount = {$loan->getOriginalAmount()},
-						last_interest_update = {$loan->getLastInterestUpdate()},
-						WHERE
-						ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
-						ent_name = '{$this->db->escape_string($entity->getName())}' AND
-						name = '{$this->db->escape_string($loan->getName())}';");
-						// the creditor can be safely ignoreed  because I won't let it change
-			}
-			else{
-				$this->db->query("INSERT INTO {$this->ltn} VALUES (
-						'{$this->db->escape_string($entity->getAbsolutePrefix())}',
-						'{$this->db->escape_string($entity->getName())}',
-						'{$this->db->escape_string($loan->getName())}',
-						{$loan->getAmount()},
-						{$loan->getDue()},
-						{$loan->getIncreasePerHour()},
-						{$loan->getCreation()},
-						{$loan->getOriginalAmount()},
-						{$loan->getLastInterestUpdate()},
-						{$loan->getCreditor()->getEntity()->getAbsolutePrefix()},
-						{$loan->getCreditor()->getEntity()->getName()},
-						{$loan->getCreditor()->getName()}
-						);");
-			}
+			$this->db->query("INSERT INTO {$this->ltn} VALUES (
+					'{$this->db->escape_string($entity->getAbsolutePrefix())}',
+					'{$this->db->escape_string($entity->getName())}',
+					'{$this->db->escape_string($loan->getName())}',
+					{$loan->getAmount()},
+					{$loan->getDue()},
+					{$loan->getIncreasePerHour()},
+					{$loan->getCreation()},
+					{$loan->getOriginalAmount()},
+					{$loan->getLastInterestUpdate()},
+					'{$this->db->escape_string($loan->getCreditor()->getEntity()->getAbsolutePrefix())}',
+					'{$this->db->escape_string($loan->getCreditor()->getEntity()->getName())}',
+					'{$this->db->escape_string($loan->getCreditor()->getName())}'
+					);");
 		}
 	}
 	public function deleteEntity($uniqueName){

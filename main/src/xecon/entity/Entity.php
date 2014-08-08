@@ -8,9 +8,9 @@ use xecon\Main;
 
 trait Entity{
 	/** @var Account[] */
-	protected $accounts = [];
+	private $accounts = [];
 	/** @var Loan[] */
-	protected $loans = [];
+	private $loans = [];
 	/** @var Main */
 	protected $main;
 	protected function initializeXEconEntity(Main $main){
@@ -27,7 +27,7 @@ trait Entity{
 	public function getMain(){
 		return $this->main;
 	}
-	protected function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0){
+	public function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0){
 		$name = strtolower($name);
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this);
 		$this->accounts[$name]->setMaxContainable($maxContainable);
@@ -73,7 +73,7 @@ trait Entity{
 	public abstract function getName();
 	public abstract function getAbsolutePrefix();
 	public abstract function sendMessage($msg);
-	protected abstract function initDefaultAccounts();
+	public abstract function initDefaultAccounts();
 	public function __destruct(){
 		$this->save();
 	}

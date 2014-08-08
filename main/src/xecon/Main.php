@@ -16,6 +16,7 @@ use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\provider\JSONDataProvider;
 use xecon\provider\MysqliDataProvider;
+use xecon\provider\SQLite3DataProvider;
 use xecon\subcommands\Subcommand;
 use xecon\utils\CallbackPluginTask;
 
@@ -39,7 +40,7 @@ class Main extends PluginBase implements Listener{
 		$data = $this->getConfig()->get("data provider");
 		switch($name = strtolower($data["name"])){
 			case "sqlite3":
-				// TODO
+				$this->dataProvider = new SQLite3DataProvider($this, $data[$name]);
 				break;
 			case "disk":
 				$this->dataProvider = new JSONDataProvider($this, $data[$name]);
@@ -64,7 +65,16 @@ class Main extends PluginBase implements Listener{
 				$this->dataProvider = new MysqliDataProvider($this, $db, $data[$name]);
 		}
 		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
-		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
+		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (
+				fromtype TEXT,
+				fromname TEXT,
+				fromaccount TEXT,
+				totype TEXT,
+				toname TEXT,
+				toaccount TEXT,
+				amount REAL,
+				details TEXT,
+				tmstmp INTEGER)");
 		$this->service = new Service($this);
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "collectGarbage")), 200, 200);
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
