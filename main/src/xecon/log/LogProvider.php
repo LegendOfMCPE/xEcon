@@ -2,10 +2,12 @@
 
 namespace xecon\log;
 
-use xecon\account\Account;
 use xecon\Main;
 
 abstract class LogProvider{
+	const O_OR = 0;
+	const O_AND = 1;
+	const O_XOR = 2;
 	/** @var Main */
 	private $main;
 	public function __construct(Main $main){
@@ -18,26 +20,23 @@ abstract class LogProvider{
 		return $this->main;
 	}
 	/**
-	 * @param Account $from
-	 * @param Account $to
-	 * @param $amount
-	 * @param $details
+	 * @param Transaction $tsctn
 	 */
-	public abstract function logTransaction(Account $from, Account $to, $amount, $details);
+	public abstract function logTransaction(Transaction $tsctn);
 	/**
-	 * @param $ftype
-	 * @param $fname
-	 * @param $facc
-	 * @param $ttype
-	 * @param $tname
-	 * @param $tacc
-	 * @param $minAmount
-	 * @param $maxAmount
-	 * @param $ftime
-	 * @param $ttime
-	 * @param $fromToOper
-	 * @return array
+	 * @param string $ftype
+	 * @param string $fname
+	 * @param string $facc
+	 * @param string $ttype
+	 * @param string $tname
+	 * @param string $tacc
+	 * @param double $minAmount
+	 * @param double $maxAmount
+	 * @param int $ftime
+	 * @param int $ttime
+	 * @param int $fromToOper
+	 * @return Transaction
 	 */
 	public abstract function getTransactions($ftype, $fname, $facc, $ttype, $tname, $tacc,
-			$minAmount, $maxAmount, $ftime, $ttime, $fromToOper);
+			$minAmount, $maxAmount, $ftime, $ttime, $fromToOper = self::O_OR);
 }

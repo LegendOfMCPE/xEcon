@@ -9,7 +9,7 @@ class Transaction{
 	private $amount;
 	/** @var string */
 	private $details;
-	public function __construct($fromType, $fromName, $fromAccount, $toType, $toName, $toAccount, $amount, $details){
+	public function __construct($fromType, $fromName, $fromAccount, $toType, $toName, $toAccount, $amount, $details, $timestamp = null){
 		$this->fromType = $fromType;
 		$this->fromName = $fromName;
 		$this->fromAccount = $fromAccount;
@@ -18,6 +18,7 @@ class Transaction{
 		$this->toAccount = $toAccount;
 		$this->amount = $amount;
 		$this->details = $details;
+		$this->timestamp = is_int($timestamp) ? $timestamp:time();
 	}
 	/**
 	 * @return string
