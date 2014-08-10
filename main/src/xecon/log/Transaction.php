@@ -2,6 +2,8 @@
 
 namespace xecon\log;
 
+use xecon\account\Account;
+
 class Transaction{
 	/** @var string */
 	private $fromType, $fromName, $fromAccount, $toType, $toName, $toAccount;
@@ -9,10 +11,20 @@ class Transaction{
 	private $amount;
 	/** @var string */
 	private $details;
-	public function __construct($fromType, $fromName, $fromAccount, $toType, $toName, $toAccount, $amount, $details, $timestamp = null){
+	public function __construct($fromType, $fromName = null, $fromAccount = null, $toType, $toName = null, $toAccount = null, $amount, $details, $timestamp = null){
+		if($fromType instanceof Account){
+			$fromName = $fromType->getEntity()->getName();
+			$fromAccount = $fromType->getName();
+			$fromType = $fromType->getEntity()->getAbsolutePrefix();
+		}
 		$this->fromType = $fromType;
 		$this->fromName = $fromName;
 		$this->fromAccount = $fromAccount;
+		if($toType instanceof Account){
+			$toName = $toType->getEntity()->getName();
+			$toAccount = $toType->getName();
+			$toType = $toType->getEntity()->getAbsolutePrefix();
+		}
 		$this->toType = $toType;
 		$this->toName = $toName;
 		$this->toAccount = $toAccount;

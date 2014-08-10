@@ -14,6 +14,8 @@ use xecon\account\Account;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
+use xecon\log\LogProvider;
+use xecon\log\Transaction;
 use xecon\provider\JSONDataProvider;
 use xecon\provider\MysqliDataProvider;
 use xecon\provider\SQLite3DataProvider;
@@ -23,8 +25,8 @@ use xecon\utils\CallbackPluginTask;
 class Main extends PluginBase implements Listener{
 	/** @var Session[] $sessions */
 	private $sessions = [];
-	/** @var \SQLite3 */
-	private $logs;
+	/** @var log\LogProvider */
+	private $log;
 	/** @var Service */
 	private $service;
 	/** @var Subcommand[] */
@@ -168,17 +170,7 @@ class Main extends PluginBase implements Listener{
 		return $this->service;
 	}
 	public function logTransaction(Account $from, Account $to, $amount, $details = "None"){
-		$op = $this->logs->prepare("INSERT INTO transactions (fromtype, fromname, fromaccount, totype, toname, toaccount, amount, details, tmstmp) VALUES (:fromtype, :fromname, :fromaccount, :totype, :toname, :toaccount, :amount, :details, :tmstmp)");
-		$op->bindValue(":fromtype", $from->getEntity()->getAbsolutePrefix());
-		$op->bindValue(":fromname", $from->getEntity()->getName());
-		$op->bindValue(":fromaccount", $from->getName());
-		$op->bindValue(":totype", $to->getEntity()->getAbsolutePrefix());
-		$op->bindValue(":toname", $to->getEntity()->getName());
-		$op->bindValue(":toaccount", $to->getName());
-		$op->bindValue(":amount", $amount);
-		$op->bindValue(":details", $details);
-		$op->bindValue(":tmstmp", time());
-		$op->execute();
+		$this->log->logTransaction(new Transaction($from, $to, $amount, $details));
 	}
 	/**
 	 * @param string|null $fromType
@@ -192,74 +184,10 @@ class Main extends PluginBase implements Listener{
 	 * @param int $amountMin
 	 * @param int $amountMax
 	 * @param int|string $fromToOper
-	 * @return \SQLite3Result
+	 * @return Transaction[]
 	 */
-	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX, $fromToOper = "OR"){ // is it possible to use RegExp to filter texts in SQLite3?
-		if($fromToOper === T_LOGICAL_XOR or $fromToOper === T_XOR_EQUAL){
-			$fromToOper = "XOR";
-		}
-		elseif($fromToOper === T_LOGICAL_OR or $fromToOper === T_OR_EQUAL or $fromToOper === T_BOOLEAN_OR){
-			$fromToOper = "OR";
-		}
-		elseif($fromToOper === T_AND_EQUAL or $fromToOper === T_BOOLEAN_AND or $fromToOper === T_LOGICAL_AND){
-			$fromToOper = "AND";
-		}
-		$query = "SELECT * FROM transactions WHERE (tmstmp BETWEEN :timemin AND :timemax) AND (amount BETWEEN :amountmin AND :amountmax) ORDER BY tmstmp ASC;";
-		$from = "";
-		if(is_string($fromType) or is_string($fromName) or is_string($fromAccount)){
-			$from .= "(";
-			$exprs = [];
-			if(is_string($fromType)) $exprs[] = "fromtype = :fromtype";
-			if(is_string($fromName)) $exprs[] = "fromname = :fromname";
-			if(is_string($fromAccount)) $exprs[] = "fromaccount = :fromaccount";
-			$from .= implode(" AND ", $exprs);
-			$from .= ")";
-		}
-		$to = "";
-		if(is_string($toType) or is_string($toName) or is_string($toAccount)){
-			$to .= "(";
-			$exprs = [];
-			if(is_string($toType)) $exprs[] = "totype = :totype";
-			if(is_string($toName)) $exprs[] = "toname = :toname";
-			if(is_string($toAccount)) $exprs[] = "toaccount = :toaccount";
-			$to .= implode(" AND ", $exprs);
-			$to .= ")";
-		}
-		if($from and $to){
-			$query .= " AND ($from $fromToOper $to)";
-		}
-		elseif($from or $to){
-			if($from){
-				$query .= " AND $from";
-			}
-			else{
-				$query .= " AND $to";
-			}
-		}
-		$op = $this->logs->prepare($query);
-		$op->bindValue(":timemin", $tmstmpMin);
-		$op->bindValue(":timemax", $tmstmpMax === null ? time():$tmstmpMax);
-		$op->bindValue(":amountmin", $amountMin);
-		$op->bindValue(":amountmax", $amountMax);
-		if(strpos($query, ":fromtype") !== false){
-			$op->bindValue(":fromtype", $fromType);
-		}
-		if(strpos($query, ":fromname") !== false){
-			$op->bindValue(":fromname", $fromName);
-		}
-		if(strpos($query, ":fromaccount") !== false){
-			$op->bindValue(":fromaccount", $fromAccount);
-		}
-		if(strpos($query, ":totype") !== false){
-			$op->bindValue(":totype", $toType);
-		}
-		if(strpos($query, ":toname") !== false){
-			$op->bindValue(":toname", $toName);
-		}
-		if(strpos($query, ":toaccount") !== false){
-			$op->bindValue(":toaccount", $toAccount);
-		}
-		return $op->execute();
+	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX, $fromToOper = LogProvider::O_OR){ // is it possible to use RegExp to filter texts in SQLite3?
+		return $this->log->getTransactions($fromType, $fromName, $fromAccount, $toType, $toName, $toAccount, $amountMin, $amountMax, $tmstmpMin, $tmstmpMax, $fromToOper);
 	}
 	public function getDataProvider(){
 		return $this->dataProvider;
