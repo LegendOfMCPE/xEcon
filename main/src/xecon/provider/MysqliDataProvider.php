@@ -24,32 +24,32 @@ class MysqliDataProvider extends DataProvider{
 		$this->itn = $prefix."registered_ips";
 		$this->universal = $args["use universal"];
 		$db->query("CREATE TABLE IF NOT EXISTS {$this->mtn} (
-				ent_type VARCHAR(256),
-				ent_name VARCHAR(256),
+				ent_type VARCHAR(255),
+				ent_name VARCHAR(255),
 				register_time BIGINT UNSIGNED,
 				last_modify BIGINT UNSIGNED
 				);");
 		$db->query("CREATE TABLE IF NOT EXISTS {$this->atn} (
-				ent_type VARCHAR(256),
-				ent_name VARCHAR(256),
-				name VARCHAR(256),
+				ent_type VARCHAR(255),
+				ent_name VARCHAR(255),
+				name VARCHAR(255),
 				amount DOUBLE SIGNED,
 				max_containable BIGINT UNSIGNED,
 				min_amount INT SIGNED
 				);");
 		$db->query("CREATE TABLE IF NOT EXISTS {$this->ltn} (
-				ent_type VARCHAR(256),
-				ent_name VARCHAR(256),
-				name VARCHAR(256),
+				ent_type VARCHAR(255),
+				ent_name VARCHAR(255),
+				name VARCHAR(255),
 				amount DOUBLE SIGNED,
 				due BIGINT UNSIGNED,
 				increase_per_hour DOUBLE SIGNED,
 				creation BIGINT UNSIGNED,
 				original_amount DOUBLE SIGNED,
 				last_interest_update BIGINT UNSIGNED,
-				from_type VARCHAR(256),
-				from_name VARCHAR(256),
-				from_account VARCHAR(256)
+				from_type VARCHAR(255),
+				from_name VARCHAR(255),
+				from_account VARCHAR(255)
 				);");
 		$db->query("CREATE TABLE IF NOT EXISTS {$this->itn} (
 				ip VARBINARY(4) PRIMARY KEY
