@@ -28,9 +28,12 @@ class PlayerEnt{
 		$this->save();
 		$this->release();
 	}
-	protected function initDefaultAccounts(){
+	public function initDefaultAccounts(){
 		$this->addAccount(self::ACCOUNT_BANK, 0, $this->getMain()->getMaxBankMoney(), -$this->getMain()->getMaxBankOverdraft());
 		$this->addAccount(self::ACCOUNT_CASH, 0, $this->getMain()->getMaxCashMoney());
+		if($this->valid()){
+			$this->getMain()->getDataProvider()->checkPlayer($this);
+		}
 	}
 	public function getName(){
 		return strtolower($this->name);
