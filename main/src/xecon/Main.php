@@ -8,48 +8,85 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
+use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
 use xecon\account\Account;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
+use xecon\log\LogProvider;
+use xecon\log\Transaction;
+use xecon\provider\JSONDataProvider;
+use xecon\provider\MysqliDataProvider;
+use xecon\provider\SQLite3DataProvider;
 use xecon\subcommands\Subcommand;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
-	const QUEUE_LOG_GET = "GET";
-	const QUEUE_LOG_LOG = "PUT";
-	/** @var string directory where economic entity information is stored */
-	private $edir;
 	/** @var Session[] $sessions */
 	private $sessions = [];
-	/** @var \SQLite3 */
-	private $logs;
+	/** @var log\LogProvider */
+	private $log;
 	/** @var Service */
 	private $service;
 	/** @var Subcommand[] */
 	private $subcommands = [];
 	/** @var \WeakRef[] */
 	private $ents = [];
-	/** @var string[] */
-	public static $queue = [];
-	public static $results = [];
-	/** @var Config */
-	private $defaultedIPs;
+	/** @var \xecon\provider\DataProvider */
+	private $dataProvider;
+	/** @var \mysqli|null */
+	private $universalMysqli = null;
 	public function onEnable(){
-		$this->mkdirs();
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-		$this->defaultedIPs = new Config($this->getDataFolder()."default-given IPs.list", Config::ENUM);
+		$data = $this->getConfig()->get("data provider");
+		switch($name = strtolower($data["name"])){
+			case "sqlite3":
+				$this->dataProvider = new SQLite3DataProvider($this, $data[$name]);
+				break;
+			case "disk":
+				$this->dataProvider = new JSONDataProvider($this, $data[$name]);
+				break;
+			case "mysqli":
+				if($data[$name]["use universal"]){
+					$db = $this->getUniversalMysqliDatabase($this);
+					if($db === null){
+						return;
+					}
+				}
+				else{
+					$details = $data[$name]["connection details"];
+					$db = new \mysqli($details["host"], $details["username"], $details["password"], $details["database"], $details["port"]);
+					if($db->connect_error){
+						$this->getLogger()->critical("Unable to connect to core MySQL database! Reason: ".$db->connect_error);
+						$this->getLogger()->critical("Disabling due to required core MySQL database not connectable.");
+						$this->getLogger()->critical("Try changing the data provider type or fixing the connection details.");
+						$this->getPluginLoader()->disablePlugin($this);
+					}
+				}
+				$this->dataProvider = new MysqliDataProvider($this, $db, $data[$name]);
+		}
 		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
-		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (fromtype TEXT, fromname TEXT, fromaccount TEXT, totype TEXT, toname TEXT, toaccount TEXT, amount INT, details TEXT, tmstmp INT)");
+		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (
+				fromtype TEXT,
+				fromname TEXT,
+				fromaccount TEXT,
+				totype TEXT,
+				toname TEXT,
+				toaccount TEXT,
+				amount REAL,
+				details TEXT,
+				tmstmp INTEGER)");
 		$this->service = new Service($this);
-		// TODO I remember I wanted to do something here, but after chasing a few PocketMine-MP bugs, I forgot it. :( I made this mark here to remind ourselves that we should add something here. It is something about callback tasks.
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "collectGarbage")), 200, 200);
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
 	}
 	public function onDisable(){
 		$this->logs->close();
+		$this->dataProvider->close();
+		if($this->universalMysqli instanceof \mysqli){
+			$this->universalMysqli->close(); // disable dependencies too
+		}
 	}
 	public function registerSubcommand(Subcommand $subcommand){
 		$this->subcommands[$subcommand->getName()] = $subcommand;
@@ -71,22 +108,26 @@ class Main extends PluginBase implements Listener{
 			return false;
 		}
 	}
-	public function opQueue(){
-		while(self::$queue){
-			/** @var array $request */
-			$request = unserialize(array_shift(self::$queue));
-			$id = array_shift($request);
-			switch(array_shift($request)){
-				case self::QUEUE_LOG_GET:
-					/** @var \SQLite3Result $result */
-					$result = call_user_func_array(array($this, "getTransactions"), $request);
-					$data = [];
-					while(($datum = $result->fetchArray(SQLITE3_ASSOC)) !== false){
-						$data[] = $datum;
+	public function getUniversalMysqliDatabase(Plugin $ctx, $disableOnFailure = true){
+		if(!($this->universalMysqli instanceof \mysqli)){
+			$data = $this->getConfig()->get("universal mysqli database")["connection details"];
+			$this->universalMysqli = new \mysqli($data["host"], $data["username"], $data["password"], $data["database"], $data["port"]);
+			if($this->universalMysqli->connect_error){
+				$ctx->getLogger()->critical("Failed to connect to the xEcon universal MySQL database! Reason: ".$this->universalMysqli->connect_error);
+				if($disableOnFailure){
+					if($ctx !== $this){
+						$desc = $ctx->getDescription();
+						$this->getLogger()->critical("Disabling ".$desc->getFullName()." by ".implode(", ", $desc->getAuthors())." because the required universal MySQL database cannot be connected to.");
 					}
-					self::$results[$id] = serialize($data);
+					else{
+						$this->getLogger()->critical("Disabling due to required universal MySQL database not connectable.");
+					}
+					$ctx->getPluginLoader()->disablePlugin($ctx);
+				}
+				$this->universalMysqli = null;
 			}
 		}
+		return $this->universalMysqli;
 	}
 	public function getMaxBankOverdraft(){
 		return $this->getConfig()->get("player account")["bank"]["overdraft"];
@@ -106,13 +147,6 @@ class Main extends PluginBase implements Listener{
 	public function isGiveForEachName(){
 		return $this->getConfig()->get("player accont")["default"]["give for each ip"];
 	}
-	private function mkdirs(){
-		@mkdir($this->getDataFolder());
-		@mkdir($this->edir = $this->getDataFolder()."entities database/");
-	}
-	public function getEntDir(){
-		return $this->edir;
-	}
 	public function onJoin(PlayerJoinEvent $evt){
 		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer(), $this);
 	}
@@ -121,20 +155,6 @@ class Main extends PluginBase implements Listener{
 		if(isset($this->sessions[$this->CID($p)])){
 			$this->sessions[$this->CID($p)]->onQuit();
 			unset($this->sessions[$this->CID($p)]);
-		}
-	}
-	public function touchIP(PlayerEnt $ent){
-		$player = $ent->getPlayer();
-		if(!($player instanceof Player)){
-			throw new \BadMethodCallException("Main::touchIP() must be provided with a PlayerEnt instance with field \$player as a Player instance");
-		}
-		if(!($this->defaultedIPs->exists($player->getAddress())) or $this->isGiveForEachName()){
-			$bank = $ent->getAccount(PlayerEnt::ACCOUNT_BANK);
-			$cash = $ent->getAccount(PlayerEnt::ACCOUNT_CASH);
-			$starters = $this->getService()->getService("Starters");
-			$starters->pay($bank, $this->getDefaultBankMoney(), "Initial bank capital");
-			$starters->pay($cash, $this->getDefaultCashMoney(), "Initial cash capital");
-			$player->sendMessage("You have been given your initial capital");
 		}
 	}
 	public function getSessions(){
@@ -150,17 +170,7 @@ class Main extends PluginBase implements Listener{
 		return $this->service;
 	}
 	public function logTransaction(Account $from, Account $to, $amount, $details = "None"){
-		$op = $this->logs->prepare("INSERT INTO transactions (fromtype, fromname, fromaccount, totype, toname, toaccount, amount, details, tmstmp) VALUES (:fromtype, :fromname, :fromaccount, :totype, :toname, :toaccount, :amount, :details, :tmstmp)");
-		$op->bindValue(":fromtype", $from->getEntity()->getAbsolutePrefix());
-		$op->bindValue(":fromname", $from->getEntity()->getName());
-		$op->bindValue(":fromaccount", $from->getName());
-		$op->bindValue(":totype", $to->getEntity()->getAbsolutePrefix());
-		$op->bindValue(":toname", $to->getEntity()->getName());
-		$op->bindValue(":toaccount", $to->getName());
-		$op->bindValue(":amount", $amount);
-		$op->bindValue(":details", $details);
-		$op->bindValue(":tmstmp", time());
-		$op->execute();
+		$this->log->logTransaction(new Transaction($from, $to, $amount, $details));
 	}
 	/**
 	 * @param string|null $fromType
@@ -174,74 +184,13 @@ class Main extends PluginBase implements Listener{
 	 * @param int $amountMin
 	 * @param int $amountMax
 	 * @param int|string $fromToOper
-	 * @return \SQLite3Result
+	 * @return Transaction[]
 	 */
-	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX, $fromToOper = "OR"){ // is it possible to use RegExp to filter texts in SQLite3?
-		if($fromToOper === T_LOGICAL_XOR or $fromToOper === T_XOR_EQUAL){
-			$fromToOper = "XOR";
-		}
-		elseif($fromToOper === T_LOGICAL_OR or $fromToOper === T_OR_EQUAL or $fromToOper === T_BOOLEAN_OR){
-			$fromToOper = "OR";
-		}
-		elseif($fromToOper === T_AND_EQUAL or $fromToOper === T_BOOLEAN_AND or $fromToOper === T_LOGICAL_AND){
-			$fromToOper = "AND";
-		}
-		$query = "SELECT * FROM transactions WHERE (tmstmp BETWEEN :timemin AND :timemax) AND (amount BETWEEN :amountmin AND :amountmax) ORDER BY tmstmp ASC;";
-		$from = "";
-		if(is_string($fromType) or is_string($fromName) or is_string($fromAccount)){
-			$from .= "(";
-			$exprs = [];
-			if(is_string($fromType)) $exprs[] = "fromtype = :fromtype";
-			if(is_string($fromName)) $exprs[] = "fromname = :fromname";
-			if(is_string($fromAccount)) $exprs[] = "fromaccount = :fromaccount";
-			$from .= implode(" AND ", $exprs);
-			$from .= ")";
-		}
-		$to = "";
-		if(is_string($toType) or is_string($toName) or is_string($toAccount)){
-			$to .= "(";
-			$exprs = [];
-			if(is_string($toType)) $exprs[] = "totype = :totype";
-			if(is_string($toName)) $exprs[] = "toname = :toname";
-			if(is_string($toAccount)) $exprs[] = "toaccount = :toaccount";
-			$to .= implode(" AND ", $exprs);
-			$to .= ")";
-		}
-		if($from and $to){
-			$query .= " AND ($from $fromToOper $to)";
-		}
-		elseif($from or $to){
-			if($from){
-				$query .= " AND $from";
-			}
-			else{
-				$query .= " AND $to";
-			}
-		}
-		$op = $this->logs->prepare($query);
-		$op->bindValue(":timemin", $tmstmpMin);
-		$op->bindValue(":timemax", $tmstmpMax === null ? time():$tmstmpMax);
-		$op->bindValue(":amountmin", $amountMin);
-		$op->bindValue(":amountmax", $amountMax);
-		if(strpos($query, ":fromtype") !== false){
-			$op->bindValue(":fromtype", $fromType);
-		}
-		if(strpos($query, ":fromname") !== false){
-			$op->bindValue(":fromname", $fromName);
-		}
-		if(strpos($query, ":fromaccount") !== false){
-			$op->bindValue(":fromaccount", $fromAccount);
-		}
-		if(strpos($query, ":totype") !== false){
-			$op->bindValue(":totype", $toType);
-		}
-		if(strpos($query, ":toname") !== false){
-			$op->bindValue(":toname", $toName);
-		}
-		if(strpos($query, ":toaccount") !== false){
-			$op->bindValue(":toaccount", $toAccount);
-		}
-		return $op->execute();
+	public function getTransactions($fromType = null, $fromName = null, $fromAccount = null, $toType = null, $toName = null, $toAccount = null, $tmstmpMin = 0, $tmstmpMax = null, $amountMin = 0, $amountMax = PHP_INT_MAX, $fromToOper = LogProvider::O_OR){ // is it possible to use RegExp to filter texts in SQLite3?
+		return $this->log->getTransactions($fromType, $fromName, $fromAccount, $toType, $toName, $toAccount, $amountMin, $amountMax, $tmstmpMin, $tmstmpMax, $fromToOper);
+	}
+	public function getDataProvider(){
+		return $this->dataProvider;
 	}
 	/**
 	 * @param $name
@@ -256,7 +205,7 @@ class Main extends PluginBase implements Listener{
 		$realName = $name;
 		$name = PlayerEnt::ABSOLUTE_PREFIX."/$name";
 		if(!isset($this->ents[$name])){
-			$this->ents[$name] = new \WeakRef(new PlayerEnt($realName, $this));
+			new PlayerEnt($realName, $this); // It will automatically register to addEntity() in the constructor
 		}
 		return $this->ents[$name]->get();
 	}

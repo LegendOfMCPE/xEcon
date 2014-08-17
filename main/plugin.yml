@@ -5,7 +5,7 @@ api: [1.0.0]
 load: STARTUP
 main: xecon\Main
 commands:
-  xecon:
+  xecon: # TODO let's make many commands instead of subcommands!
     description: xEcon main command
     aliases: [x, xe, econ, xec]
     usage: "/xecon <subcommand|help> (Use '/xecon help' to see the subcommands)"

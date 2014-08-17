@@ -23,17 +23,17 @@ class Account implements InventoryHolder{
 //	private $inventoryMoneySlots = [];
 	private $containerTypes = [];
 	private $liability = false;
-	public static function constructFromArray($name, Entity $entity, $data){
-		$constructor = $data["class"]."::constructInstance";
-		return $constructor($name, $entity, $data);
-	}
-	public static function constructInstance($name, Entity $entity, $data){
-		$inst = new Account($name, $data["amount"], $entity);
-		$inst->setMinAmount($data["min-amount"]);
-		$inst->setMaxContainable($data["max-containable"]);
-		$inst->setIsLiability($data["is-liability"]);
-		return $inst;
-	}
+//	public static function constructFromArray($name, Entity $entity, $data){
+//		$constructor = $data["class"]."::constructInstance";
+//		return $constructor($name, $entity, $data);
+//	}
+//	public static function constructInstance($name, Entity $entity, $data){
+//		$inst = new Account($name, $data["amount"], $entity);
+//		$inst->setMinAmount($data["min-amount"]);
+//		$inst->setMaxContainable($data["max-containable"]);
+//		$inst->setIsLiability($data["is-liability"]);
+//		return $inst;
+//	}
 	/**
 	 * @param string $name
 	 * @param float $amount
@@ -172,14 +172,14 @@ class Account implements InventoryHolder{
 	public function getEntity(){
 		return $this->entity;
 	}
-	public function toArray(){
-		return [
-			"amount" => $this->getAmount(),
-			"max-containable" => $this->getMaxContainable(),
-			"min-amount" => $this->minAmount,
-			"class" => get_class($this),
-		];
-	}
+//	public function toArray(){
+//		return [
+//			"amount" => $this->getAmount(),
+//			"max-containable" => $this->getMaxContainable(),
+//			"min-amount" => $this->minAmount,
+//			"class" => get_class($this),
+//		];
+//	}
 	/**
 	 * @return int
 	 */

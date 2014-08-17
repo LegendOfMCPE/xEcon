@@ -6,8 +6,12 @@ use xecon\Main;
 
 class Service{
 	use Entity;
+	const TYPE = "Server";
+	const NAME = "Services";
+	const ACCOUNT_OPS = "Operators";
+	const ACCOUNT_LOANS = "BankLoanSource";
 	public function __construct(Main $main){
-		$this->initializeXEconEntity($this->getFolderByName($this->getName()), $main);
+		$this->initializeXEconEntity($main);
 	}
 	public function sendMessage($msg, $level = \LogLevel::INFO){
 		$this->main->getLogger()->log($level, $msg);
@@ -15,7 +19,6 @@ class Service{
 	public function initDefaultAccounts(){
 		$this->addAccount("Operators", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);
 		$this->addAccount("BankLoanSource", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);
-		$this->addAccount("Starters", PHP_INT_MAX);
 	}
 	public function registerService($name){
 		$this->addAccount($name, (int) ceil(PHP_INT_MAX / 2));
@@ -24,9 +27,9 @@ class Service{
 		return $this->getAccount($name);
 	}
 	public function getName(){
-		return "Services";
+		return self::NAME;
 	}
 	public function getAbsolutePrefix(){
-		return "Server";
+		return self::TYPE;
 	}
 }
