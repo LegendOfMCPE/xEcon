@@ -52,6 +52,22 @@ data provider:
       database: "xEcon"
       port: 3306
 
+# Configures the logs that log all player transactions
+# Settings are similar to the above settings of MySQLi data provider
+logs:
+  name: SQLite3
+  sqlite3:
+    database path: transactions.sq3
+  mysqli:
+    table name prefix: xecon_core_logs_
+    use universal: true
+    connection details:
+      host: example.com
+      username: "anonymous"
+      password: "123456AintGoodPassword"
+      database: "xEcon_logs"
+      port: 3306
+
 # For every component of xEcon (the API and plugins that depend on it),
 # if "use-universal-database" is set to true, this database will be applied.
 # Configure this if you want to use the same connection to your database instead of many.

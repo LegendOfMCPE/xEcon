@@ -2,8 +2,6 @@
 
 namespace xecon;
 
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -11,15 +9,17 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use xecon\account\Account;
+use xecon\cmd\SetMoneyCommand;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\log\LogProvider;
+use xecon\log\MysqliLogProvider;
+use xecon\log\SQLite3LogProvider;
 use xecon\log\Transaction;
 use xecon\provider\JSONDataProvider;
 use xecon\provider\MysqliDataProvider;
 use xecon\provider\SQLite3DataProvider;
-use xecon\subcommands\Subcommand;
 use xecon\utils\CallbackPluginTask;
 
 class Main extends PluginBase implements Listener{
@@ -29,8 +29,6 @@ class Main extends PluginBase implements Listener{
 	private $log;
 	/** @var Service */
 	private $service;
-	/** @var Subcommand[] */
-	private $subcommands = [];
 	/** @var \WeakRef[] */
 	private $ents = [];
 	/** @var \xecon\provider\DataProvider */
@@ -38,7 +36,6 @@ class Main extends PluginBase implements Listener{
 	/** @var \mysqli|null */
 	private $universalMysqli = null;
 	public function onEnable(){
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$data = $this->getConfig()->get("data provider");
 		switch($name = strtolower($data["name"])){
 			case "sqlite3":
@@ -66,46 +63,42 @@ class Main extends PluginBase implements Listener{
 				}
 				$this->dataProvider = new MysqliDataProvider($this, $db, $data[$name]);
 		}
-		$this->logs = new \SQLite3($this->getDataFolder()."logs.sq3");
-		$this->logs->exec("CREATE TABLE IF NOT EXISTS transactions (
-				fromtype TEXT,
-				fromname TEXT,
-				fromaccount TEXT,
-				totype TEXT,
-				toname TEXT,
-				toaccount TEXT,
-				amount REAL,
-				details TEXT,
-				tmstmp INTEGER)");
+		$data = $this->getConfig()->get("logs");
+		switch($name = strtolower($data["name"])){
+			case "sqlite3":
+				$this->log = new SQLite3LogProvider($this, $data[$name]["path"]);
+				break;
+			case "mysqli":
+				$args = $data[$name];
+				if($args["use universal"]){
+					$db = $this->getUniversalMysqliDatabase($this);
+					if(!($db instanceof \mysqli)){
+						return;
+					}
+				}
+				else{
+					$conn = $args["connection details"];
+					$db = new \mysqli($conn["host"], (string) $conn["username"], (string) $conn["password"],
+							(string) $conn["database"], (int) $conn["port"]);
+					if($db->connect_error){
+						$this->getLogger()->critical(sprintf("Cannot enable xEcon: failed to create " .
+								"MySQL connection to %s:%d. Reason: %s", (string) $conn["host"],
+								(int) $conn["port"], $db->connect_error));
+					}
+				}
+				$this->log = new MysqliLogProvider($this, $db, $args["table name prefix"]);
+				break;
+		}
 		$this->service = new Service($this);
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->registerCommands();
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "collectGarbage")), 200, 200);
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
 	}
 	public function onDisable(){
-		$this->logs->close();
 		$this->dataProvider->close();
 		if($this->universalMysqli instanceof \mysqli){
 			$this->universalMysqli->close(); // disable dependencies too
-		}
-	}
-	public function registerSubcommand(Subcommand $subcommand){
-		$this->subcommands[$subcommand->getName()] = $subcommand;
-		foreach($subcommand->getAliases() as $alias){
-			$this->subcommands[$alias] = $subcommand;
-		}
-	}
-	public function onCommand(CommandSender $sender, Command $command, $alias, array $args){
-		$sub = trim(strtolower(array_shift($args)));
-		if(isset($this->subcommands[$sub])){
-			$this->subcommands[$sub]->execute($sender, $args);
-			return true;
-		}
-		elseif($sub === "help"){
-			// TODO
-			return true;
-		}
-		else{
-			return false;
 		}
 	}
 	public function getUniversalMysqliDatabase(Plugin $ctx, $disableOnFailure = true){
@@ -128,6 +121,12 @@ class Main extends PluginBase implements Listener{
 			}
 		}
 		return $this->universalMysqli;
+	}
+	private function registerCommands(){
+		$this->getServer()->getCommandMap()->registerAll("xecon", [
+			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_CASH, "cash"),
+			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_BANK, "bank"),
+		]);
 	}
 	public function getMaxBankOverdraft(){
 		return $this->getConfig()->get("player account")["bank"]["overdraft"];
@@ -163,9 +162,6 @@ class Main extends PluginBase implements Listener{
 	public function getSession(Player $player){
 		return $this->sessions[$player->getID()];
 	}
-	public function getLogs(){
-		return $this->logs;
-	}
 	public function getService(){
 		return $this->service;
 	}
@@ -193,10 +189,11 @@ class Main extends PluginBase implements Listener{
 		return $this->dataProvider;
 	}
 	/**
-	 * @param $name
+	 * @param string $name
+	 * @param bool $create
 	 * @return PlayerEnt
 	 */
-	public function getPlayerEnt($name){
+	public function getPlayerEnt($name, $create = true){
 		$this->collectGarbage();
 		if($name instanceof Player){
 			$name = $name->getName();
@@ -205,6 +202,9 @@ class Main extends PluginBase implements Listener{
 		$realName = $name;
 		$name = PlayerEnt::ABSOLUTE_PREFIX."/$name";
 		if(!isset($this->ents[$name])){
+			if(!$create){
+				return false;
+			}
 			new PlayerEnt($realName, $this); // It will automatically register to addEntity() in the constructor
 		}
 		return $this->ents[$name]->get();

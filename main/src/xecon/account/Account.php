@@ -146,22 +146,49 @@ class Account implements InventoryHolder{
 ////		}
 //	}
 	/**
-	 * This is an API method. You are encouraged to
-	 * use this method (with $account as \xecon\Main::getService()->getService($serviceName))
+	 * This is an API method. You are encouraged to use this method (with $account
+	 * as \xecon\Main::getService()->getService($serviceName)) or transactWithAccountTo()
 	 * instead of Account::add(), Account::take() or Account::setAmount(). Look at
 	 * <a href="https://github.com/LegendOfMCPE/xEcon/wiki/developer's%20guide">the article about
 	 * <i>double entry</i> on the wiki</a> for why using this method is encouraged.
 	 * @param Account $other
 	 * @param number $amount
 	 * @param string $detail
+	 * @param bool $force
 	 * @return bool
 	 */
-	public function pay(Account $other, $amount, $detail = "None"){
-		if($other->take($amount) and $this->add($amount)){
+	public function pay(Account $other, $amount, $detail = "None", $force = false){
+		if(!$this->canPay($amount) and !$force){
+			return false;
+		}
+		if($other->add($amount) and $this->take($amount)){ // why did I mess these two up...
 			$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
 			return true;
 		}
 		return false;
+	}
+	/**
+	 * This is an API method. Developers are encouraged to use either this method or pay().
+	 * @param $amount
+	 * @param Account $other
+	 * @param null $detail
+	 * @return int
+	 */
+	public function transactWithAccountTo($amount, Account $other, $detail = null){
+		if($detail === null){
+			$detail = "transact to \$$amount";
+		}
+		if($this->getAmount() === $amount){
+			return 0;
+		}
+		if($this->getAmount() > $amount){
+			return $this->pay($other, $this->getAmount() - $amount, $detail) ?
+					($amount - $this->getAmount()):0;
+		}
+		else{
+			return $other->pay($this, $amount - $this->getAmount(), $detail) ?
+					($amount - $this->getAmount()):0;
+		}
 	}
 	public function canPay($amount){
 		return ($this->amount - $amount) >= $this->minAmount;
@@ -187,6 +214,6 @@ class Account implements InventoryHolder{
 		return $this->minAmount;
 	}
 	public function getUniqueName(){
-		return implode("/", $this->entity->getAbsolutePrefix(), $this->entity->getName(), $this->getName());
+		return implode("/", [$this->entity->getAbsolutePrefix(), $this->entity->getName(), $this->getName()]);
 	}
 }
