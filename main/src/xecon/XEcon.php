@@ -9,6 +9,7 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use xecon\account\Account;
+use xecon\cmd\RelativeChangeMoneyCommand;
 use xecon\cmd\SetMoneyCommand;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
@@ -22,7 +23,7 @@ use xecon\provider\MysqliDataProvider;
 use xecon\provider\SQLite3DataProvider;
 use xecon\utils\CallbackPluginTask;
 
-class Main extends PluginBase implements Listener{
+class XEcon extends PluginBase implements Listener{
 	/** @var Session[] $sessions */
 	private $sessions = [];
 	/** @var log\LogProvider */
@@ -125,7 +126,11 @@ class Main extends PluginBase implements Listener{
 	private function registerCommands(){
 		$this->getServer()->getCommandMap()->registerAll("xecon", [
 			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_CASH, "cash"),
-			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_BANK, "bank"),
+			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_BANK, "bank money"),
+			new RelativeChangeMoneyCommand($this, "addcash", true, "add to", PlayerEnt::ACCOUNT_CASH, "cash", ["add$"]),
+			new RelativeChangeMoneyCommand($this, "rmcash", false, "take", PlayerEnt::ACCOUNT_CASH, "cash", ["rm$"]),
+			new RelativeChangeMoneyCommand($this, "addbank", true, "add to", PlayerEnt::ACCOUNT_BANK, "bank money"),
+			new RelativeChangeMoneyCommand($this, "rmbank", false, "take", PlayerEnt::ACCOUNT_BANK, "bank money"),
 		]);
 	}
 	public function getMaxBankOverdraft(){

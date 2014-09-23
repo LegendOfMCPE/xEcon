@@ -5,16 +5,16 @@ namespace xecon\provider;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
-use xecon\Main;
+use xecon\XEcon;
 
 abstract class DataProvider{
-	/** @var Main */
+	/** @var XEcon */
 	private $main;
-	public function __construct(Main $main){
+	public function __construct(XEcon $main){
 		$this->main = $main;
 	}
 	/**
-	 * @return Main
+	 * @return XEcon
 	 */
 	public function getMain(){
 		return $this->main;

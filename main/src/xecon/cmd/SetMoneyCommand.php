@@ -6,29 +6,29 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
-use xecon\Main;
+use xecon\XEcon;
 
 class SetMoneyCommand extends XEconCommand{
 	private $tarAccName;
 	private $accGenName;
 	/**
-	 * @param Main $main
+	 * @param XEcon $main
 	 * @param string $tarAccName
 	 * @param string $accGenName
 	 */
-	public function __construct(Main $main, $tarAccName, $accGenName){
-		parent::__construct($main);
+	public function __construct(XEcon $main, $tarAccName, $accGenName){
 		$this->tarAccName = $tarAccName;
 		$this->accGenName = $accGenName;
+		parent::__construct($main);
 	}
 	public function getName_(){
-		return "set".$this->getAccountGenericName();
+		return "set".$this->accGenName;
 	}
 	public function getDesc_(){
-		return "Set the player's {$this->getAccountGenericName()} to a specified amount";
+		return "Set the player's {$this->accGenName} to a specified amount";
 	}
 	public function getUsage_(){
-		return "/{$this->getName_()} <player> <amount> [.e] [details ...](add '.e' when you want to refer to offline players)";
+		return "/{$this->getName_()} <player> <amount> [.e] [details ...](add '.e' if the player might be offline)";
 	}
 	public function getAliases_(){
 		return $this->accGenName === "cash" ? ["set$"]:[];
@@ -41,7 +41,7 @@ class SetMoneyCommand extends XEconCommand{
 		if(!is_numeric($amount)){
 			return false;
 		}
-		$amount = (int) $amount;
+		$amount = floatval($amount);
 		$e = false;
 		if(isset($args[2]) and $args[2] === ".e"){
 			$e = true;
@@ -58,22 +58,10 @@ class SetMoneyCommand extends XEconCommand{
 				return "Player $args[0] has not been registered!";
 			}
 		}
-		$acc = $ent->getAccount($this->getTargetAccountName());
+		$acc = $ent->getAccount($this->tarAccName);
 		$src = $this->getPlugin()->getService()->getService(Service::ACCOUNT_OPS);
 		$details = implode(" ", array_slice($args, 2 + ($e ? 1:0)));
-		$acc->transactWithAccountTo($amount, $src, strlen(trim($details)) > 0 ? trim($details):"{$this->getAccountGenericName()} set by a command");
+		$acc->transactWithAccountTo($amount, $src, strlen(trim($details)) > 0 ? trim($details):"{$this->accGenName} set by a command");
 		return true;
-	}
-	/**
-	 * @return string
-	 */
-	protected function getTargetAccountName(){
-		return $this->tarAccName;
-	}
-	/**
-	 * @return string
-	 */
-	protected function getAccountGenericName(){
-		return $this->accGenName;
 	}
 }

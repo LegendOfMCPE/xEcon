@@ -4,16 +4,16 @@ namespace xecon\entity;
 
 use xecon\account\Account;
 use xecon\account\Loan;
-use xecon\Main;
+use xecon\XEcon;
 
 trait Entity{
 	/** @var Account[] */
 	private $accounts = [];
 	/** @var Loan[] */
 	private $loans = [];
-	/** @var Main */
+	/** @var XEcon */
 	protected $main;
-	protected function initializeXEconEntity(Main $main){
+	protected function initializeXEconEntity(XEcon $main){
 		$this->main = $main;
 		$this->main->getDataProvider()->loadEntity($this);
 		$this->getMain()->addEntity($this);
@@ -22,7 +22,7 @@ trait Entity{
 		return $this->accounts[$account]->getInventory();
 	}
 	/**
-	 * @return Main
+	 * @return XEcon
 	 */
 	public function getMain(){
 		return $this->main;

@@ -2,14 +2,14 @@
 
 namespace xecon\log;
 
-use xecon\Main;
+use xecon\XEcon;
 
 class MysqliLogProvider extends LogProvider{
 	/** @var \mysqli */
 	private $db;
 	/** @var string */
 	private $tbl;
-	public function __construct(Main $main, \mysqli $mysqli, $tbl){
+	public function __construct(XEcon $main, \mysqli $mysqli, $tbl){
 		parent::__construct($main);
 		$this->db = $mysqli;
 		$this->tbl = $tbl;

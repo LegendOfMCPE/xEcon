@@ -7,7 +7,7 @@ use xecon\account\Loan;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
-use xecon\Main;
+use xecon\XEcon;
 
 class JSONDataProvider extends DataProvider{
 	/** @var string */
@@ -16,7 +16,7 @@ class JSONDataProvider extends DataProvider{
 	private $pretty;
 	/** @var Config */
 	private $ipList;
-	public function __construct(Main $main, array $args){
+	public function __construct(XEcon $main, array $args){
 		parent::__construct($main);
 		$this->path = $args["path"];
 		$this->ipList = new Config($main->getDataFolder().$args["list path"], Config::ENUM);

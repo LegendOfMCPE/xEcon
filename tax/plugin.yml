@@ -3,6 +3,6 @@ author: LegendOfMCPE
 prefix: Tax
 version: 0.0.0
 api: [1.0.0]
-main: xecon\tax\Main
+main: xecon\tax\TaxPlugin
 depend: xEcon
 softdepend: xEcon_Jobs

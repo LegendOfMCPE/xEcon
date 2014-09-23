@@ -9,6 +9,8 @@ class Transaction{
 	private $fromType, $fromName, $fromAccount, $toType, $toName, $toAccount;
 	/** @var double */
 	private $amount;
+	/** @var int */
+	private $timestamp;
 	/** @var string */
 	private $details;
 	public function __construct($fromType, $fromName = null, $fromAccount = null, $toType, $toName = null, $toAccount = null, $amount, $details, $timestamp = null){
@@ -79,5 +81,8 @@ class Transaction{
 	 */
 	public function getDetails(){
 		return $this->details;
+	}
+	public function getTimestamp(){
+		return $this->timestamp;
 	}
 }

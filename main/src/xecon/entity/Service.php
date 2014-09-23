@@ -2,7 +2,7 @@
 
 namespace xecon\entity;
 
-use xecon\Main;
+use xecon\XEcon;
 
 class Service{
 	use Entity;
@@ -10,7 +10,7 @@ class Service{
 	const NAME = "Services";
 	const ACCOUNT_OPS = "Operators";
 	const ACCOUNT_LOANS = "BankLoanSource";
-	public function __construct(Main $main){
+	public function __construct(XEcon $main){
 		$this->initializeXEconEntity($main);
 	}
 	public function sendMessage($msg, $level = \LogLevel::INFO){

@@ -8,13 +8,13 @@ use pocketmine\plugin\PluginBase;
 use xecon\tax\tax\Tax;
 use xecon\utils\CallbackPluginTask;
 
-class Main extends PluginBase implements Listener{
+class TaxPlugin extends PluginBase implements Listener{
 	/** @var \xecon\account\Account */
 	private $service;
 	/** @var Tax[] */
 	private $taxes = [];
 	public function onEnable(){
-		/** @var \xecon\Main $xEcon */
+		/** @var \xecon\XEcon $xEcon */
 		$xEcon = $this->getServer()->getPluginManager()->getPlugin("xEcon");
 		$xEcon->getService()->registerService("TaxColl");
 		$this->service = $xEcon->getService()->getService("TaxColl");
@@ -53,7 +53,7 @@ class Main extends PluginBase implements Listener{
 		$this->getLogger()->info(count($this->taxes)." taxes have been loaded.");
 	}
 	/**
-	 * @return taxes\Tax[]
+	 * @return tax\Tax[]
 	 */
 	public function getTaxes(){
 		return $this->taxes;

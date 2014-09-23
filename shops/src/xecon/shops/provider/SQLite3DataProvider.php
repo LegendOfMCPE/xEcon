@@ -5,7 +5,7 @@ namespace xecon\shops\provider;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\Server;
-use xecon\Main;
+use xecon\XEcon;
 use xecon\shops\shops\PhysicalShop;
 use xecon\shops\Shops;
 use xecon\shops\shops\Shop;
@@ -15,11 +15,11 @@ class SQLite3DataProvider implements DataProvider{
 	private $server;
 	/** @var Shops */
 	private $shops;
-	/** @var Main  */
+	/** @var XEcon  */
 	private $main;
 	/** @var \SQLite3 */
 	private $db;
-	public function __construct(Server $server, Shops $shops, Main $main, array $args){
+	public function __construct(Server $server, Shops $shops, XEcon $main, array $args){
 		$this->server = $server;
 		$this->shops = $shops;
 		$this->main = $main;

@@ -3,7 +3,7 @@
 namespace xecon\utils;
 
 use pocketmine\Player;
-use xecon\Main;
+use xecon\XEcon;
 
 class ExcelWriter{
 	const TYPE = 0;
@@ -96,42 +96,39 @@ EOI
 		fclose($s);
 	}
 	/**
-	 * @param Main $main
+	 * @param XEcon $main
 	 * @param Player $player
 	 * @param int $from
 	 * @param int $to
 	 * @param int|string $fromToFilter T_LOGICAL_OR for all transactions, T_LOGICAL_AND for self-to-self inter-account transactions, T_LOGICAL_XOR for inter-entity transactions
 	 * @return string
 	 */
-	public static function exportTransactions(Main $main, Player $player, $from = 0, $to = PHP_INT_MAX, $fromToFilter = T_LOGICAL_OR){
+	public static function exportTransactions(XEcon $main, Player $player, $from = 0, $to = PHP_INT_MAX, $fromToFilter = T_LOGICAL_OR){
 		$ent = $main->getSession($player)->getEntity();
-		$query = $main->getTransactions($ent->getAbsolutePrefix(), $ent->getName(), null, $ent->getAbsolutePrefix(), $ent->getName(), null, $from, $to, 0, PHP_INT_MAX, $fromToFilter);
+		$data = $main->getTransactions($ent->getAbsolutePrefix(), $ent->getName(), null, $ent->getAbsolutePrefix(), $ent->getName(), null, $from, $to, 0, PHP_INT_MAX, $fromToFilter);
 		$dir = $main->getDataFolder()."logs/";
 		$file = strtolower($player->getName())." transaction logs on ".date("F j, Y")." at ".date("H.i.s (e O, T)");
-		$data = [];
-		while(($dat = $query->fetchArray(SQLITE3_ASSOC)) !== false){
-			$data[] = $dat;
-		}
 		$serialized = serialize($data);
 		$lowName = strtolower($player->getName());
 		$onRun = function() use($dir, $file, $serialized, $lowName){
 			@mkdir($dir);
+			/** @var \xecon\log\Transaction[] $rawData */
 			$rawData = unserialize($serialized);
 			$output = [];
 			foreach($rawData as $transaction){
-				$timestamp = $transaction["tmstmp"];
+				$timestamp = $transaction->getTimestamp();
 				$out = [
 					self::TYPE => "Pay", // pay or receive
-					self::TARGET_NAME => $transaction["totype"]." ".$transaction["toname"], // name of the entity paid to/received from
-					self::TARGET_ACCOUNT => $transaction["toaccount"], // account paid to/received from
-					self::AMOUNT => $transaction["amount"], // amount paid
-					self::DETAILS => $transaction["details"], // details, if exists, or "none"
+					self::TARGET_NAME => $transaction->getToType()." ".$transaction->getToName(), // name of the entity paid to/received from
+					self::TARGET_ACCOUNT => $transaction->getToAccount(), // account paid to/received from
+					self::AMOUNT => $transaction->getAmount(), // amount paid
+					self::DETAILS => $transaction->getDetails(), // details, if exists, or "none"
 					self::DATE => "__DATE__$timestamp", // "__DATE__" followed by the timestamp
 				];
 				if($transaction["totype"] === "Player" and $transaction["toname"] === $lowName){
 					$out[self::TYPE] = "Receive";
-					$out[self::TARGET_NAME] = $transaction["fromtype"]." ".$transaction["fromname"];
-					$out[self::TARGET_ACCOUNT] = $transaction["fromaccount"];
+					$out[self::TARGET_NAME] = $transaction->getFromType()." ".$transaction->getFromName();
+					$out[self::TARGET_ACCOUNT] = $transaction->getFromAccount();
 				}
 				$output[] = $out;
 			}

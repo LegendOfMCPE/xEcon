@@ -8,7 +8,7 @@ use xecon\shops\provider\SQLite3DataProvider;
 class Shops extends PluginBase{
 	const SERVICE_NAME = "Shops";
 	const TYPE_PHYSICAL = 1;
-	/** @var \xecon\Main */
+	/** @var \xecon\XEcon */
 	private $xEcon;
 	/** @var \xecon\shops\provider\DataProvider */
 	private $provider;

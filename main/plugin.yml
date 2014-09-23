@@ -3,35 +3,7 @@ author: LegendOfMCPE
 version: 1.0
 api: [1.0.0]
 load: STARTUP
-main: xecon\Main
-commands:
-  setcash:
-    description: Set the player's cash to the specified amount
-    usage: /setcash <player> <amount> [e|exact] (e|exact is for checking the player name exactly. If the player is offline, you must use the 'e' argument)e
-    aliases: [set$]
-  addcash:
-    description: Add the specified amount of cash to the player
-    usage: /addcash <player> <amount> [e|exact] (e|exact is for checking the player name exactly. If the player is offline, you must use the 'e' argument)
-    aliases: [add$]
-  rmcash:
-    description: Take the specified amount of cash from the player
-    usage: /rmcash <player> <amount> [e|exact] (e|exact is for checking the player name exactly. If the player is offline, you must use the 'e' argument)
-    aliases: [rm$]
-  setbank:
-    description: Set the player's bank money to the specified amount
-    usage: /setcash <player> <amount> [e|exact] (e|exact is for checking the player name exactly. If the player is offline, you must use the 'e' argument)e
-  addbank:
-    description: Add the specified amount of bank money to the player
-    usage: /addcash <player> <amount> [e|exact] (e|exact is for checking the player name exactly. If the player is offline, you must use the 'e' argument)
-  rmbank:
-    description: Take the specified amount of bank money from the player
-    usage: /rmbank <player> <amount> [e|exact] (e|exact is for checking the player name exactly. If the player is offline, you must use the 'e' argument)
-  rawadd:
-    description: Add the specified amount of money to the specified account of the specified economic entity
-    usage: /rawadd <type> <name> <account> <amount>
-  rawrm:
-    description: Remove the specified amount of money to the
-
+main: xecon\XEcon
 permissions:
   xecon:
     description: xEcon main permission node, allows full control on xEcon

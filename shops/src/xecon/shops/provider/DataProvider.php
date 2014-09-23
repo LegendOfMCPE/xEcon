@@ -4,7 +4,7 @@ namespace xecon\shops\provider;
 
 use pocketmine\level\Position;
 use pocketmine\Server;
-use xecon\Main as XEcon;
+use xecon\XEcon as XEcon;
 use xecon\shops\Shops;
 use xecon\shops\shops\Shop;
 

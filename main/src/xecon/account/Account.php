@@ -7,6 +7,7 @@ use pocketmine\inventory\InventoryHolder;
 //use pocketmine\item\Item;
 use pocketmine\network\protocol;
 use xecon\entity\Entity;
+use xecon\entity\Service;
 
 class Account implements InventoryHolder{
 	/** @var string */
@@ -96,6 +97,9 @@ class Account implements InventoryHolder{
 	 */
 	public function setAmount($amount){
 		if($amount > $this->maxContainable or $amount < $this->minAmount){
+			if($this->entity instanceof Service){
+				return true;
+			}
 			return false;
 		}
 		$this->amount = $amount;
@@ -158,6 +162,9 @@ class Account implements InventoryHolder{
 	 * @return bool
 	 */
 	public function pay(Account $other, $amount, $detail = "None", $force = false){
+		if($detail === ""){
+			$detail = "None";
+		}
 		if(!$this->canPay($amount) and !$force){
 			return false;
 		}
@@ -191,7 +198,7 @@ class Account implements InventoryHolder{
 		}
 	}
 	public function canPay($amount){
-		return ($this->amount - $amount) >= $this->minAmount;
+		return ($this->entity instanceof Service) or ($this->amount - $amount) >= $this->minAmount;
 	}
 	/**
 	 * @return \xecon\entity\Entity

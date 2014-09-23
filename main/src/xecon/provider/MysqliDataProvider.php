@@ -6,7 +6,7 @@ use xecon\account\Loan;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
-use xecon\Main;
+use xecon\XEcon;
 
 class MysqliDataProvider extends DataProvider{
 	/** @var \mysqli */
@@ -14,7 +14,7 @@ class MysqliDataProvider extends DataProvider{
 	private $mtn, $atn, $ltn, $itn;
 	/** @var bool */
 	private $universal;
-	public function __construct(Main $main, \mysqli $db, array $args){
+	public function __construct(XEcon $main, \mysqli $db, array $args){
 		parent::__construct($main);
 		$this->db = $db;
 		$prefix = $args["table name prefix"];

@@ -6,12 +6,12 @@ use xecon\account\Loan;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
-use xecon\Main;
+use xecon\XEcon;
 
 class SQLite3DataProvider extends DataProvider{
 	/** @var \SQLite3 */
 	private $db;
-	public function __construct(Main $main, array $args){
+	public function __construct(XEcon $main, array $args){
 		parent::__construct($main);
 		$this->db = new \SQLite3($main->getDataFolder().$args["path"]);
 		$this->db->exec("CREATE TABLE IF NOT EXISTS ents (

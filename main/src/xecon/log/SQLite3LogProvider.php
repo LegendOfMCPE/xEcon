@@ -2,10 +2,10 @@
 
 namespace xecon\log;
 
-use xecon\Main;
+use xecon\XEcon;
 
 class SQLite3LogProvider extends LogProvider{
-	public function __construct(Main $main, $path){
+	public function __construct(XEcon $main, $path){
 		parent::__construct($main);
 		$this->db = new \SQLite3($main->getDataFolder().$path);
 		$this->db->exec("CREATE TABLE IF NOT EXISTS transactions (

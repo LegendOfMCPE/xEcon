@@ -3,7 +3,7 @@
 namespace xecon\entity;
 
 use pocketmine\Player;
-use xecon\Main;
+use xecon\XEcon;
 
 class PlayerEnt{
 	use Entity;
@@ -13,7 +13,7 @@ class PlayerEnt{
 	const ACCOUNT_CASH = "Cash";
 	const ACCOUNT_BANK = "Bank";
 	const ABSOLUTE_PREFIX = "Player";
-	public function __construct($player, Main $main){
+	public function __construct($player, XEcon $main){
 		if($player instanceof Player){
 			$this->player = new \WeakRef($player);
 			$this->name = $player->getName();

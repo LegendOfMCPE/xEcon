@@ -5,11 +5,11 @@ namespace xecon\cmd;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginIdentifiableCommand;
-use xecon\Main;
+use xecon\XEcon;
 
 abstract class XEconCommand extends Command implements PluginIdentifiableCommand{
 	private $main;
-	public function __construct(Main $main){
+	public function __construct(XEcon $main){
 		$a = $this->getAliases_();
 		if(!is_array($a)){
 			$a = [$a];
