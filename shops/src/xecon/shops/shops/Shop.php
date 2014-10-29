@@ -4,7 +4,7 @@ namespace xecon\shops\shops;
 
 use pocketmine\block\Air;
 use pocketmine\inventory\Inventory;
-use pocketmine\item\Block as BlockItem;
+use pocketmine\item\ItemBlock;
 use pocketmine\item\Item;
 use xecon\account\Account;
 use xecon\shops\Shops;
@@ -103,7 +103,7 @@ trait Shop{
 				if($item->getID() === $this->getItem()->getID() and (!$this->isCheckDamage() or $item->getDamage() === $this->getItem()->getDamage())){
 					$count = $item->getCount();
 					if($required >= $count){
-						$store->setItem($slot, new BlockItem(new Air));
+						$store->setItem($slot, new ItemBlock(new Air));
 						if($count === $required){
 							break;
 						}
