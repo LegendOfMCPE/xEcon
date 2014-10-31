@@ -9,7 +9,7 @@ use pocketmine\network\protocol;
 use xecon\entity\Entity;
 use xecon\entity\Service;
 
-class Account implements InventoryHolder{
+class Account implements InventoryHolder, Transactable{
 	/** @var string */
 	protected $name;
 	/** @var float */
@@ -97,10 +97,9 @@ class Account implements InventoryHolder{
 	 */
 	public function setAmount($amount){
 		if($amount > $this->maxContainable or $amount < $this->minAmount){
-			if($this->entity instanceof Service){
-				return true;
+			if(!($this->entity instanceof Service)){
+				return false;
 			}
-			return false;
 		}
 		$this->amount = $amount;
 //		$this->tidyInventory($amount);
@@ -155,20 +154,22 @@ class Account implements InventoryHolder{
 	 * instead of Account::add(), Account::take() or Account::setAmount(). Look at
 	 * <a href="https://github.com/LegendOfMCPE/xEcon/wiki/developer's%20guide">the article about
 	 * <i>double entry</i> on the wiki</a> for why using this method is encouraged.
-	 * @param Account $other
+	 * @param Transactable $other
 	 * @param number $amount
 	 * @param string $detail
 	 * @param bool $force
 	 * @return bool
 	 */
-	public function pay(Account $other, $amount, $detail = "None", $force = false){
+	public function pay(Transactable $other, $amount, $detail = "None", $force = false){
 		if($detail === ""){
 			$detail = "None";
 		}
-		if(!$this->canPay($amount) and !$force){
-			return false;
+		if(!$this->canPay($amount)){
+			if(!$force){
+				return false;
+			}
 		}
-		if($other->add($amount) and $this->take($amount)){ // why did I mess these two up...
+		if($other->add($amount) and $this->take($amount) and ($other instanceof Account)){ // why did I mess these two up...
 			$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
 			return true;
 		}
@@ -199,6 +200,9 @@ class Account implements InventoryHolder{
 	}
 	public function canPay($amount){
 		return ($this->entity instanceof Service) or ($this->amount - $amount) >= $this->minAmount;
+	}
+	public function canReceive($amount){
+		return ($this->entity instanceof Service) or ($this->amount + $amount) <= $this->maxContainable;
 	}
 	/**
 	 * @return \xecon\entity\Entity

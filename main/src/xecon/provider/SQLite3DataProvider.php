@@ -108,14 +108,15 @@ class SQLite3DataProvider extends DataProvider{
 				WHERE ent_type = '{$this->db->escapeString($entity->getAbsolutePrefix())}'
 				AND ent_name = '{$this->db->escapeString($entity->getName())}';");
 		foreach($entity->getLoans() as $loan){
+			$loan->updateInterest();
 			$this->db->query("INSERT INTO ent_loans VALUES (
 					'{$this->db->escapeString($entity->getAbsolutePrefix())}',
 					'{$this->db->escapeString($entity->getName())}',
 					'{$this->db->escapeString($loan->getName())}',
 					{$loan->getAmount()},
 					{$loan->getDue()},
-					{$loan->getIncreasePerHour()},
-					{$loan->getCreation()},
+					{$loan->getHourlyIncrease()},
+					{$loan->getCreationTime()},
 					{$loan->getOriginalAmount()},
 					{$loan->getLastInterestUpdate()},
 					'{$this->db->escapeString($loan->getCreditor()->getEntity()->getAbsolutePrefix())}',

@@ -40,6 +40,16 @@ trait Entity{
 	public function addLoanRaw(Loan $loan){
 		$this->loans[$loan->getName()] = $loan;
 	}
+	public function removeLoan(Loan $loan){
+		if($loan->getOwner() !== $this){
+			return $loan->getOwner()->removeLoan($loan);
+		}
+		if(!isset($this->loans[$loan->getName()])){
+			return false;
+		}
+		unset($this->loans[$loan->getName()]);
+		return true;
+	}
 	public function delete(){
 		$this->getMain()->getDataProvider()->deleteEntity($this->getUniqueName());
 	}

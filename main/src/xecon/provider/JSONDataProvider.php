@@ -74,8 +74,8 @@ class JSONDataProvider extends DataProvider{
 				"name" => $loan->getName(),
 				"amount" => $loan->getAmount(),
 				"due" => $loan->getDue(),
-				"increase per hour" => $loan->getIncreasePerHour(),
-				"creation" => $loan->getCreation(),
+				"increase per hour" => $loan->getHourlyIncrease(),
+				"creation" => $loan->getCreationTime(),
 				"original amount" => $loan->getOriginalAmount(),
 				"last interest update" => $loan->getLastInterestUpdate(),
 				"from" => [
