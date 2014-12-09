@@ -3,7 +3,6 @@
 namespace xecon\provider;
 
 use xecon\account\Loan;
-use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\XEcon;
@@ -44,7 +43,7 @@ class SQLite3DataProvider extends DataProvider{
 				);");
 		$this->db->exec("CREATE TABLE IF NOT EXISTS ips (ip REAL PRIMARY KEY);");
 	}
-	public function loadEntity(Entity $entity){
+	public function loadEntity($entity){
 		if($this->existsEntity($entity->getAbsolutePrefix(), $entity->getName())){
 			$result = $this->db->query("SELECT * FROM ent_accounts
 					WHERE ent_type = '{$this->db->escapeString($entity->getAbsolutePrefix())}'
@@ -77,7 +76,7 @@ class SQLite3DataProvider extends DataProvider{
 			$entity->initDefaultAccounts();
 		}
 	}
-	public function saveEntity(Entity $entity){
+	public function saveEntity($entity){
 		$now = time();
 		if($this->existsEntity($entity->getAbsolutePrefix(), $entity->getName())){
 			$this->db->query("UPDATE ents SET register_time = $now " .

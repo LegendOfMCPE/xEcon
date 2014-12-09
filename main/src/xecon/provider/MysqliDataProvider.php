@@ -3,7 +3,6 @@
 namespace xecon\provider;
 
 use xecon\account\Loan;
-use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\XEcon;
@@ -55,7 +54,7 @@ class MysqliDataProvider extends DataProvider{
 				ip VARBINARY(4) PRIMARY KEY
 				);");
 	}
-	public function loadEntity(Entity $entity){
+	public function loadEntity($entity){
 		$result = $this->db->query("SELECT * FROM {$this->mtn} WHERE
 				ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
 				ent_name = '{$this->db->escape_string($entity->getName())}';");
@@ -102,7 +101,7 @@ class MysqliDataProvider extends DataProvider{
 				$data["original_amount"], $data["last_interest_update"]));
 		}
 	}
-	public function saveEntity(Entity $entity){
+	public function saveEntity($entity){
 		$result = $this->db->query("SELECT * FROM {$this->mtn} WHERE
 				ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
 				ent_name = '{$this->db->escape_string($entity->getName())}';");

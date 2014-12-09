@@ -19,8 +19,14 @@ abstract class DataProvider{
 	public function getMain(){
 		return $this->main;
 	}
-	public abstract function loadEntity(Entity $entity);
-	public abstract function saveEntity(Entity $entity);
+	/**
+	 * @param Entity $entity
+	 */
+	public abstract function loadEntity($entity);
+	/**
+	 * @param Entity $entity
+	 */
+	public abstract function saveEntity($entity);
 	public abstract function deleteEntity($uniqueName);
 	/**
 	 * @param $ip

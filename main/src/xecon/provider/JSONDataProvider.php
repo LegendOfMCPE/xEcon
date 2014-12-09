@@ -28,7 +28,7 @@ class JSONDataProvider extends DataProvider{
 		@mkdir(dirname($path), 0777, true);
 		return $path;
 	}
-	public function loadEntity(Entity $entity){
+	public function loadEntity($entity){
 		$file = $this->getPath($entity);
 		if(!is_file($file)){
 			$entity->initDefaultAccounts();
@@ -58,7 +58,7 @@ class JSONDataProvider extends DataProvider{
 				$data["creation"], $data["original amount"], $data["last interest update"]));
 		}
 	}
-	public function saveEntity(Entity $entity){
+	public function saveEntity($entity){
 		$file = $this->getPath($entity);
 		$data = ["accounts" => [], "loans" => []];
 		foreach($entity->getAccounts() as $account){
