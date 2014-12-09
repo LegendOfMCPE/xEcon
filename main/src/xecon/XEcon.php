@@ -37,6 +37,7 @@ class XEcon extends PluginBase implements Listener{
 	/** @var \mysqli|null */
 	private $universalMysqli = null;
 	public function onEnable(){
+		$this->saveDefaultConfig();
 		$data = $this->getConfig()->get("data provider");
 		switch($name = strtolower($data["name"])){
 			case "sqlite3":
@@ -70,7 +71,7 @@ class XEcon extends PluginBase implements Listener{
 		$data = $this->getConfig()->get("logs");
 		switch($name = strtolower($data["name"])){
 			case "sqlite3":
-				$this->log = new SQLite3LogProvider($this, $data[$name]["path"]);
+				$this->log = new SQLite3LogProvider($this, $data[$name]["database path"]);
 				break;
 			case "mysqli":
 				$args = $data[$name];
