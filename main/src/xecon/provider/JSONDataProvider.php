@@ -26,8 +26,7 @@ class JSONDataProvider extends DataProvider{
 	 * @return string
 	 */
 	public function getPath($entity){
-		$path = $this->getMain()->getDataFolder() . str_replace(
-			["<type>", "<name>"], [$entity->getAbsolutePrefix(), $entity->getName()], $this->path);
+		$path = str_replace(["<type>", "<name>"], [$entity->getAbsolutePrefix(), $entity->getName()], $this->path);
 		@mkdir(dirname($path), 0777, true);
 		return $path;
 	}
