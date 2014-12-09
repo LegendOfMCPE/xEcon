@@ -48,7 +48,7 @@ class Account implements InventoryHolder, Transactable{
 		$this->entity = $entity;
 		$this->inventory = (!($inventory instanceof Inventory)) ? new DummyInventory($this):$inventory;
 		foreach($containerTypes as $type){
-			$maxContainable = constant($type."::PER_AMOUNT") * constant($type."::MAX_STACK");
+			$maxContainable = constant("$type::PER_AMOUNT") * constant("$type::MAX_STACK");
 			$this->containerTypes[$maxContainable] = $type;
 		}
 		krsort($this->containerTypes, SORT_NUMERIC);

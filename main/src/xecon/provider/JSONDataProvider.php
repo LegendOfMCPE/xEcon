@@ -16,14 +16,14 @@ class JSONDataProvider extends DataProvider{
 	private $pretty;
 	/** @var Config */
 	private $ipList;
-	public function __construct(XEcon $main, array $args){
-		parent::__construct($main);
-		$this->path = $args["path"];
-		$this->ipList = new Config($main->getDataFolder().$args["list path"], Config::ENUM);
+	public function __construct(XEcon $plugin, array $args){
+		parent::__construct($plugin);
+		$this->path = $plugin->getDataFolder() . $args["entities path"];
+		$this->ipList = new Config($plugin->getDataFolder() . $args["list path"], Config::ENUM);
 		$this->pretty = $args["pretty print"];
 	}
 	public function getPath(Entity $entity){
-		$path = $this->getMain()->getDataFolder().str_replace(
+		$path = $this->getMain()->getDataFolder() . str_replace(
 			["<type>", "<name>"], [$entity->getAbsolutePrefix(), $entity->getName()], $this->path);
 		@mkdir(dirname($path), 0777, true);
 		return $path;
@@ -51,7 +51,7 @@ class JSONDataProvider extends DataProvider{
 						break;
 					}
 				default:
-					throw new \RuntimeException("Unsupported creditor type: ".$from["type"]);
+					throw new \RuntimeException("Unsupported creditor type: " . $from["type"]);
 			}
 			$entity->addLoanRaw(new Loan($from, $data["amount"], $entity,
 				$data["due"], $data["increase per hour"], $data["name"],
@@ -89,7 +89,7 @@ class JSONDataProvider extends DataProvider{
 	}
 	public function deleteEntity($name){
 		$path = str_replace(["<type>", "<name>"], explode("/", $name), $this->path);
-		return @unlink($this->getMain()->getDataFolder().$path);
+		return @unlink($this->getMain()->getDataFolder() . $path);
 	}
 	public function touchIP($ip){
 		if(!$this->ipList->exists($ip)){

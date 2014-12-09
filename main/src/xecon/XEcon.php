@@ -56,10 +56,13 @@ class XEcon extends PluginBase implements Listener{
 					$details = $data[$name]["connection details"];
 					$db = new \mysqli($details["host"], $details["username"], $details["password"], $details["database"], $details["port"]);
 					if($db->connect_error){
-						$this->getLogger()->critical("Unable to connect to core MySQL database! Reason: ".$db->connect_error);
-						$this->getLogger()->critical("Disabling due to required core MySQL database not connectable.");
-						$this->getLogger()->critical("Try changing the data provider type or fixing the connection details.");
-						$this->getPluginLoader()->disablePlugin($this);
+						$this->getLogger()->critical("Unable to connect to core MySQL database! " .
+							"Reason: $db->connect_error");
+						$this->getLogger()->critical("Disabling as required core MySQL database " .
+							"is not connectable.");
+						$this->getLogger()->critical("Try changing the data provider type or " .
+							"fixing the connection details.");
+						$this->getServer()->getPluginManager()->disablePlugin($this);
 					}
 				}
 				$this->dataProvider = new MysqliDataProvider($this, $db, $data[$name]);
@@ -107,11 +110,14 @@ class XEcon extends PluginBase implements Listener{
 			$data = $this->getConfig()->get("universal mysqli database")["connection details"];
 			$this->universalMysqli = new \mysqli($data["host"], $data["username"], $data["password"], $data["database"], $data["port"]);
 			if($this->universalMysqli->connect_error){
-				$ctx->getLogger()->critical("Failed to connect to the xEcon universal MySQL database! Reason: ".$this->universalMysqli->connect_error);
+				$ctx->getLogger()->critical("Failed to connect to the xEcon universal MySQL database! " .
+					"Reason: {$this->universalMysqli->connect_error}");
 				if($disableOnFailure){
 					if($ctx !== $this){
 						$desc = $ctx->getDescription();
-						$this->getLogger()->critical("Disabling ".$desc->getFullName()." by ".implode(", ", $desc->getAuthors())." because the required universal MySQL database cannot be connected to.");
+						$this->getLogger()->critical("Disabling {$desc->getFullName()} by " .
+							implode(", ", $desc->getAuthors()) . " because the required universal " .
+							"MySQL database cannot be connected to.");
 					}
 					else{
 						$this->getLogger()->critical("Disabling due to required universal MySQL database not connectable.");
@@ -205,7 +211,7 @@ class XEcon extends PluginBase implements Listener{
 		}
 		$name = strtolower($name);
 		$realName = $name;
-		$name = PlayerEnt::ABSOLUTE_PREFIX."/$name";
+		$name = PlayerEnt::ABSOLUTE_PREFIX . "/$name";
 		if(!isset($this->ents[$name])){
 			if(!$create){
 				return false;

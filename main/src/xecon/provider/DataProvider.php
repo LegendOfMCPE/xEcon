@@ -10,8 +10,8 @@ use xecon\XEcon;
 abstract class DataProvider{
 	/** @var XEcon */
 	private $main;
-	public function __construct(XEcon $main){
-		$this->main = $main;
+	public function __construct(XEcon $plugin){
+		$this->main = $plugin;
 	}
 	/**
 	 * @return XEcon

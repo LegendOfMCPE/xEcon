@@ -14,14 +14,14 @@ class MysqliDataProvider extends DataProvider{
 	private $mtn, $atn, $ltn, $itn;
 	/** @var bool */
 	private $universal;
-	public function __construct(XEcon $main, \mysqli $db, array $args){
-		parent::__construct($main);
+	public function __construct(XEcon $plugin, \mysqli $db, array $args){
+		parent::__construct($plugin);
 		$this->db = $db;
 		$prefix = $args["table name prefix"];
-		$this->mtn = $prefix."ent_index";
-		$this->atn = $prefix."ent_accounts";
-		$this->ltn = $prefix."ent_loans";
-		$this->itn = $prefix."registered_ips";
+		$this->mtn = $prefix . "ent_index";
+		$this->atn = $prefix . "ent_accounts";
+		$this->ltn = $prefix . "ent_loans";
+		$this->itn = $prefix . "registered_ips";
 		$this->universal = $args["use universal"];
 		$db->query("CREATE TABLE IF NOT EXISTS {$this->mtn} (
 				ent_type VARCHAR(255),
@@ -95,7 +95,7 @@ class MysqliDataProvider extends DataProvider{
 						break;
 					}
 				default:
-					throw new \RuntimeException("Unsupported creditor type: ".$data["from_type"]);
+					throw new \RuntimeException("Unsupported creditor type: " . $data["from_type"]);
 			}
 			$entity->addLoanRaw(new Loan($from, $data["amount"], $entity, $data["due"],
 				$data["increase_per_hour"], $data["name"], $data["creation"],

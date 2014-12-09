@@ -25,7 +25,7 @@ class Loan implements Transactable{
 			$creation = time();
 		}
 		if(!is_string($name)){
-			$name = sprintf("Loan from " . $creditor->getUniqueName());
+			$name = sprintf("Loan from {$creditor->getUniqueName()}");
 		}
 		$oname = $name;
 		for($i = 2; $owner->getAccount($name) instanceof Account; $i++){

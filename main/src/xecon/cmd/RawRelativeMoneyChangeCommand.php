@@ -18,10 +18,11 @@ class RawRelativeMoneyChangeCommand extends XEconCommand{
 		return $this->add ? "rawadd":"rawtake";
 	}
 	public function getDesc_(){
-		return ($this->add ? "Add money to":"Take money from")." an account using its raw name (type, name and account name)";
+		return ($this->add ? "Add money to":"Take money from") . " an account using its " .
+		"raw name (type, name and account name)";
 	}
 	public function getUsage_(){
-		return "/".$this->getName_()." <type> <name> <account> <amount> [details ...]";
+		return "/{$this->getName_()} <type> <name> <account> <amount> [details ...]";
 	}
 	public function execute_(CommandSender $sender, array $args){
 		if(!isset($args[3])){

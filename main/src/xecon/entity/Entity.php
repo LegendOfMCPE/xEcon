@@ -78,7 +78,7 @@ trait Entity{
 		return $balance;
 	}
 	public function getUniqueName(){
-		return $this->getAbsolutePrefix()."/".$this->getName();
+		return "{$this->getAbsolutePrefix()}/{$this->getName()}";
 	}
 	public abstract function getName();
 	public abstract function getAbsolutePrefix();

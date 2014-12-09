@@ -22,7 +22,7 @@ class SetMoneyCommand extends XEconCommand{
 		parent::__construct($main);
 	}
 	public function getName_(){
-		return "set".$this->accGenName;
+		return "set$this->accGenName";
 	}
 	public function getDesc_(){
 		return "Set the player's {$this->accGenName} to a specified amount";

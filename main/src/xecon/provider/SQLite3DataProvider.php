@@ -11,9 +11,9 @@ use xecon\XEcon;
 class SQLite3DataProvider extends DataProvider{
 	/** @var \SQLite3 */
 	private $db;
-	public function __construct(XEcon $main, array $args){
-		parent::__construct($main);
-		$this->db = new \SQLite3($main->getDataFolder().$args["path"]);
+	public function __construct(XEcon $plugin, array $args){
+		parent::__construct($plugin);
+		$this->db = new \SQLite3($plugin->getDataFolder() . $args["path"]);
 		$this->db->exec("CREATE TABLE IF NOT EXISTS ents (
 				ent_type TEXT,
 				ent_name TEXT,
@@ -80,7 +80,7 @@ class SQLite3DataProvider extends DataProvider{
 	public function saveEntity(Entity $entity){
 		$now = time();
 		if($this->existsEntity($entity->getAbsolutePrefix(), $entity->getName())){
-			$this->db->query("UPDATE ents SET register_time = $now".
+			$this->db->query("UPDATE ents SET register_time = $now " .
 					"WHERE ent_type = '{$this->db->escapeString($entity->getAbsolutePrefix())}'
 					AND ent_name = '{$this->db->escapeString($entity->getName())}';");
 		}

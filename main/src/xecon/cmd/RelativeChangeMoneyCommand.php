@@ -28,7 +28,7 @@ class RelativeChangeMoneyCommand extends XEconCommand{
 		return $this->cmdName;
 	}
 	protected function getDesc_(){
-		return ucfirst($this->actionStr)." a player's {$this->accHumanName}";
+		return ucfirst($this->actionStr) . " a player's {$this->accHumanName}";
 	}
 	protected function getUsage_(){
 		return "/{$this->getName_()} <player> <amount> [.e] [details ...] (add '.e' if the player might be offline)";
