@@ -10,7 +10,8 @@ player account:
     bank: 100000
     cash: 1000 # this is the maximum amount that can be saved in an "octopus card" in Hong Kong xD
   bank:
-    # set how much money below $0 can a bank account have
+    # Set how much money below $0 can a bank account have.
+    # Overdraft is a kind of debt, so when bank interest is given, the overdraft player will receive negative interest (more overdraft) instead.
     overdraft: 10 # this makes a bank account always have at least -$10
 
 # Configures the data provider that provides data of accounts and the IPs that have received default money (if "give for each ip" is set to true))
@@ -78,4 +79,6 @@ universal mysqli database:
     password: "123456AintGoodPassword"
     database: "xEcon"
     port: 3306
+
+### TODO support StatsCore universal database
 ...

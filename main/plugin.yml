@@ -7,3 +7,31 @@ main: xecon\XEcon
 permissions:
   xecon:
     description: xEcon main permission node, allows full control on xEcon
+    children:
+      xecon.cmd:
+        description: Allows using any commands
+        children:
+          xecon.cmd.pay:
+            description: Allows using everything in /pay command
+            default: true
+            children:
+              xecon.cmd.pay.cash:
+                description: Allows using /pay command to pay cash
+                default: true
+              xecon.cmd.pay.bank:
+                description: Allows using /pay command to pay money from bank account to another bank account
+                default: true
+          xecon.cmd.bank:
+            description: Allows using everything in /bank command
+            children:
+              xecon.cmd.bank.deposit:
+                description: Allows using the /deposit command
+                default: true
+              xecon.cmd.bank.withdraw:
+                description: Allows using the /withdraw command
+                default: true
+          xecon.cmd.loan:
+            description: Allows using everything in /loan command
+            children:
+              xecon.cmd.loan.list:
+                description: Allows viewing own's loan list

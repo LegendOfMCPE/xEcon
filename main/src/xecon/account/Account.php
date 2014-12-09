@@ -227,4 +227,7 @@ class Account implements InventoryHolder, Transactable{
 	public function getUniqueName(){
 		return implode("/", [$this->entity->getAbsolutePrefix(), $this->entity->getName(), $this->getName()]);
 	}
+	public function __toString(){
+		return $this->name;
+	}
 }
