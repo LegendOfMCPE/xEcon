@@ -4,7 +4,6 @@ namespace xecon\provider;
 
 use pocketmine\utils\Config;
 use xecon\account\Loan;
-use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\XEcon;
@@ -22,7 +21,11 @@ class JSONDataProvider extends DataProvider{
 		$this->ipList = new Config($plugin->getDataFolder() . $args["list path"], Config::ENUM);
 		$this->pretty = $args["pretty print"];
 	}
-	public function getPath(Entity $entity){
+	/**
+	 * @param \xecon\entity\Entity $entity
+	 * @return string
+	 */
+	public function getPath($entity){
 		$path = $this->getMain()->getDataFolder() . str_replace(
 			["<type>", "<name>"], [$entity->getAbsolutePrefix(), $entity->getName()], $this->path);
 		@mkdir(dirname($path), 0777, true);
