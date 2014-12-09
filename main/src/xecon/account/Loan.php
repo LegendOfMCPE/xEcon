@@ -16,7 +16,18 @@ class Loan implements Transactable{
 	protected $increasePerHour;
 	protected $lastInterestUpdate;
 	protected $originalAmount;
-	public function __construct(Account $creditor, $amount, Entity $owner, $due, $increasePerHour, $name = false, $creation = false, $originalAmount = false, $lastInterestUpdate = false){
+	/**
+	 * @param Account $creditor
+	 * @param $amount
+	 * @param Entity $owner
+	 * @param $due
+	 * @param $increasePerHour
+	 * @param bool $name
+	 * @param bool $creation
+	 * @param bool $originalAmount
+	 * @param bool $lastInterestUpdate
+	 */
+	public function __construct(Account $creditor, $amount, $owner, $due, $increasePerHour, $name = false, $creation = false, $originalAmount = false, $lastInterestUpdate = false){
 		// setting defaults
 		if(!($creditor->getName() instanceof Service) and !($creditor->getEntity() instanceof PlayerEnt)){
 			throw new \InvalidArgumentException("Loan must be provided by a player or a service");

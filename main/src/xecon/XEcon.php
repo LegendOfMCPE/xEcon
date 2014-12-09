@@ -221,7 +221,10 @@ class XEcon extends PluginBase implements Listener{
 		}
 		return $this->ents[$name]->get();
 	}
-	public function addEntity(Entity $entity){
+	/**
+	 * @param Entity $entity
+	 */
+	public function addEntity($entity){
 		$this->ents[$entity->getUniqueName()] = new \WeakRef($entity);
 	}
 	public function getEntity($uniqueName){

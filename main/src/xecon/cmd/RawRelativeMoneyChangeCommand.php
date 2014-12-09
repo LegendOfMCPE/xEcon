@@ -4,7 +4,6 @@ namespace xecon\cmd;
 
 use pocketmine\command\CommandSender;
 use xecon\account\Account;
-use xecon\entity\Entity;
 use xecon\entity\Service;
 use xecon\XEcon;
 
@@ -37,7 +36,7 @@ class RawRelativeMoneyChangeCommand extends XEconCommand{
 		}
 		$amount = floatval($amount);
 		$ent = $this->getPlugin()->getEntity("$type/$name");
-		if(!($ent instanceof Entity)){
+		if($ent === false){
 			return "Entity $type/$name doesn't exist!";
 		}
 		$acc = $ent->getAccount($account);

@@ -42,7 +42,7 @@ class Account implements InventoryHolder, Transactable{
 	 * @param Inventory|null $inventory
 	 * @param string[] $containerTypes
 	 */
-	public function __construct($name, $amount, Entity $entity, Inventory $inventory = null, array $containerTypes = []){
+	public function __construct($name, $amount, $entity, Inventory $inventory = null, array $containerTypes = []){
 		$this->name = $name;
 		$this->amount = $amount;
 		$this->entity = $entity;
