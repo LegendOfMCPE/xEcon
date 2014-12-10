@@ -36,7 +36,7 @@ class JSONDataProvider extends DataProvider{
 			$entity->initDefaultAccounts();
 			return;
 		}
-		$data = json_decode(file_get_contents($file));
+		$data = json_decode(file_get_contents($file), true);
 		foreach($data["accounts"] as $account){
 			$entity->addAccount($account["name"], $account["amount"],
 				$account["max containable"], $account["min amount"]);
