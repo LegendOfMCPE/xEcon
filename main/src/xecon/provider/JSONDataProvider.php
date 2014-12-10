@@ -87,7 +87,7 @@ class JSONDataProvider extends DataProvider{
 				]
 			];
 		}
-		file_put_contents($file, json_encode($data), ($this->pretty ? JSON_PRETTY_PRINT:0) | JSON_BIGINT_AS_STRING);
+		file_put_contents($file, json_encode($data, ($this->pretty ? JSON_PRETTY_PRINT:0) | JSON_BIGINT_AS_STRING));
 	}
 	public function deleteEntity($name){
 		$path = str_replace(["<type>", "<name>"], explode("/", $name), $this->path);
