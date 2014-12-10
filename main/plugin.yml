@@ -11,6 +11,20 @@ permissions:
       xecon.cmd:
         description: Allows using any commands
         children:
+          xecon.cmd.see:
+            description: Allows using everything in /seemoney command
+            children:
+              xecon.cmd.see.cash:
+                description: Allows seeing own's cash balance
+              xecon.cmd.see.self:
+                description: Allows seeing own's account balances. If set to true, xecon.cmd.see.cash is assumed true.
+                default: true
+              xecon.cmd.see.players:
+                description: Allows seeing account balances of any players. If set to true, xecon.cmd.see.self is assumed true.
+                default: op
+              xecon.cmd.see.all:
+                description: Allows seeing account balances of any economic entities (including server services). If set to true, xecon.cmd.see.players is assumed true.
+                default: op
           xecon.cmd.pay:
             description: Allows using everything in /pay command
             default: true

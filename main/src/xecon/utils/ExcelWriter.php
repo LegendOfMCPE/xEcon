@@ -5,7 +5,7 @@ namespace xecon\utils;
 use pocketmine\Player;
 use xecon\XEcon;
 
-class ExcelWriter{
+abstract class ExcelWriter{
 	const TYPE = 0;
 	const TARGET_NAME = 1;
 	const TARGET_ACCOUNT = 2;
@@ -15,8 +15,7 @@ class ExcelWriter{
 	public static function export($dir, $name, array $data){
 		$file = $dir . ((substr($dir, -1) === "/" or substr($dir, -1) === "\\" )? "":"/")."$name.xml";
 		$s = fopen($file, "wt");
-		if("init" === "init"){
-			fwrite($s, <<<EOI
+		fwrite($s, <<<EOI
 <?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -54,8 +53,7 @@ class ExcelWriter{
 	</Styles>
 
 EOI
-			);
-		}
+	);
 		foreach($data as $worksheet=>$rows){
 			// write each worksheet
 			// calculate max rowssize

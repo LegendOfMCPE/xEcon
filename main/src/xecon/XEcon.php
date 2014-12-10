@@ -9,7 +9,9 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use xecon\account\Account;
+use xecon\cmd\PaymentCommand;
 use xecon\cmd\RelativeChangeMoneyCommand;
+use xecon\cmd\SeeMoneyCommand;
 use xecon\cmd\SetMoneyCommand;
 use xecon\entity\Entity;
 use xecon\entity\PlayerEnt;
@@ -138,6 +140,8 @@ class XEcon extends PluginBase implements Listener{
 			new RelativeChangeMoneyCommand($this, "rmcash", false, "take", PlayerEnt::ACCOUNT_CASH, "cash", ["rm$"]),
 			new RelativeChangeMoneyCommand($this, "addbank", true, "add to", PlayerEnt::ACCOUNT_BANK, "bank money"),
 			new RelativeChangeMoneyCommand($this, "rmbank", false, "take", PlayerEnt::ACCOUNT_BANK, "bank money"),
+			new PaymentCommand($this),
+			new SeeMoneyCommand($this),
 		]);
 	}
 	public function getMaxBankOverdraft(){
@@ -213,13 +217,13 @@ class XEcon extends PluginBase implements Listener{
 		}
 		$name = strtolower($name);
 		$name = PlayerEnt::ABSOLUTE_PREFIX . "/$name";
-		if(!isset($this->ents[$name])){
+		if(!isset($this->ents[strtolower($name)])){
 			if(!$create){
 				return false;
 			}
 			new PlayerEnt(isset($player) ? $player:$name, $this); // It will automatically register to addEntity() in the constructor
 		}
-		$ent = $this->ents[$name]->get();
+		$ent = $this->ents[strtolower($name)]->get();
 		$ent->acquire();
 		return $ent;
 	}
@@ -227,10 +231,14 @@ class XEcon extends PluginBase implements Listener{
 	 * @param Entity $entity
 	 */
 	public function addEntity($entity){
-		$this->ents[$entity->getUniqueName()] = new \WeakRef($entity);
+		$this->ents[strtolower($entity->getUniqueName())] = new \WeakRef($entity);
 	}
+	/**
+	 * @param $uniqueName
+	 * @return bool|Entity
+	 */
 	public function getEntity($uniqueName){
-		return isset($this->ents[$uniqueName]) ? $this->ents[$uniqueName]->get():false;
+		return isset($this->ents[strtolower($uniqueName)]) ? $this->ents[strtolower($uniqueName)]->get():false;
 	}
 	public function collectGarbage(){
 		foreach($this->ents as $offset => $ent){
