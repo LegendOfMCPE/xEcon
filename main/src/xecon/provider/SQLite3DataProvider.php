@@ -125,14 +125,14 @@ class SQLite3DataProvider extends DataProvider{
 		}
 	}
 	public function deleteEntity($uniqueName){
-		$tokens = explode("/", $uniqueName);
-		if($this->existsEntity($tokens[0], $tokens[1])){
-			$this->db->exec("DELETE FROM ents WHERE ent_type = '{$this->db->escapeString($tokens[0])}'
-				AND ent_name = '{$this->db->escapeString($tokens[1])}';");
-			$this->db->exec("DELETE FROM ent_accounts WHERE ent_type = '{$this->db->escapeString($tokens[0])}'
-				AND ent_name = '{$this->db->escapeString($tokens[1])}';");
-			$this->db->exec("DELETE FROM ent_loans WHERE ent_type = '{$this->db->escapeString($tokens[0])}'
-				AND ent_name = '{$this->db->escapeString($tokens[1])}';");
+		list($type, $name) = explode("/", $uniqueName);
+		if($this->existsEntity($type, $name)){
+			$this->db->exec("DELETE FROM ents WHERE ent_type = '{$this->db->escapeString($type)}'
+				AND ent_name = '{$this->db->escapeString($name)}';");
+			$this->db->exec("DELETE FROM ent_accounts WHERE ent_type = '{$this->db->escapeString($type)}'
+				AND ent_name = '{$this->db->escapeString($name)}';");
+			$this->db->exec("DELETE FROM ent_loans WHERE ent_type = '{$this->db->escapeString($type)}'
+				AND ent_name = '{$this->db->escapeString($name)}';");
 		}
 	}
 	private function existsEntity($type, $name){

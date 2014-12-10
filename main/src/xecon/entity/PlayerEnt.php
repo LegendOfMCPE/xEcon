@@ -28,7 +28,7 @@ class PlayerEnt{
 		$this->save();
 		$this->release();
 	}
-	public function initDefaultAccounts(){
+	public function initializeDefaultAccounts(){
 		$this->addAccount(self::ACCOUNT_BANK, 0, $this->getMain()->getMaxBankMoney(), -$this->getMain()->getMaxBankOverdraft());
 		$this->addAccount(self::ACCOUNT_CASH, 0, $this->getMain()->getMaxCashMoney());
 		if($this->valid()){
@@ -41,6 +41,7 @@ class PlayerEnt{
 	public function check(){
 		if($this->player instanceof \WeakRef){
 			if(!$this->player->valid()){
+				$this->getMain()->getLogger()->debug("Lost object reference for player $this->name");
 				$this->player = $this->name;
 			}
 		}
@@ -83,6 +84,7 @@ class PlayerEnt{
 		if(!($this->player instanceof \WeakRef)){
 			$player = $this->getMain()->getServer()->getPlayerExact($this->name);
 			if($player instanceof Player){
+				$this->getMain()->getLogger()->debug("Found object reference for player $this->name");
 				$this->player = new \WeakRef($player);
 			}
 		}

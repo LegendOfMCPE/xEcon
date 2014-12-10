@@ -83,11 +83,18 @@ trait Entity{
 	public abstract function getName();
 	public abstract function getAbsolutePrefix();
 	public abstract function sendMessage($msg);
-	public abstract function initDefaultAccounts();
+	public final function initDefaultAccounts(){
+		$this->getMain()->getLogger()->info("Initializing new economic entity: {$this->getUniqueName()}");
+		$this->initializeDefaultAccounts();
+	}
+	protected abstract function initializeDefaultAccounts();
 	public function __destruct(){
 		$this->save();
 	}
 	public function save(){
 		$this->getMain()->getDataProvider()->saveEntity($this);
+	}
+	public function __toString(){
+		return $this->getUniqueName();
 	}
 }

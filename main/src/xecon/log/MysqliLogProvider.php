@@ -26,19 +26,19 @@ class MysqliLogProvider extends LogProvider{
 				);");
 	}
 	/**
-	 * @param Transaction $tsctn
+	 * @param Transaction $tran
 	 */
-	public function logTransaction(Transaction $tsctn){
+	public function logTransaction(Transaction $tran){
 		$now = time();
 		$this->db->query("INSERT INTO {$this->tbl} VALUES (
-				{$this->esc($tsctn->getFromType())},
-				{$this->esc($tsctn->getFromName())},
-				{$this->esc($tsctn->getFromAccount())},
-				{$this->esc($tsctn->getToType())},
-				{$this->esc($tsctn->getToName())},
-				{$this->esc($tsctn->getToAccount())},
-				{$tsctn->getAmount()},
-				{$tsctn->getDetails()},
+				{$this->esc($tran->getFromType())},
+				{$this->esc($tran->getFromName())},
+				{$this->esc($tran->getFromAccount())},
+				{$this->esc($tran->getToType())},
+				{$this->esc($tran->getToName())},
+				{$this->esc($tran->getToAccount())},
+				{$tran->getAmount()},
+				{$tran->getDetails()},
 				$now
 				);");
 	}

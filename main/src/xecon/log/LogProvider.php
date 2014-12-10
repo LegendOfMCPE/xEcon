@@ -20,9 +20,9 @@ abstract class LogProvider{
 		return $this->main;
 	}
 	/**
-	 * @param Transaction $tsctn
+	 * @param Transaction $tran
 	 */
-	public abstract function logTransaction(Transaction $tsctn);
+	public abstract function logTransaction(Transaction $tran);
 	/**
 	 * @param string $ftype
 	 * @param string $fname

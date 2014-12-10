@@ -100,4 +100,7 @@ class JSONDataProvider extends DataProvider{
 		}
 		return true;
 	}
+	public function close(){
+		$this->ipList->save();
+	}
 }

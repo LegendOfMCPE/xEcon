@@ -23,19 +23,20 @@ class SQLite3LogProvider extends LogProvider{
 	public function close(){
 		$this->db->close();
 	}
-	public function logTransaction(Transaction $tsctn){
+	public function logTransaction(Transaction $tran){
 		$now = time();
-		$this->db->exec("INSERT INTO transactions VALUES (
-				{$this->esc($tsctn->getFromType())},
-				{$this->esc($tsctn->getFromName())},
-				{$this->esc($tsctn->getFromAccount())},
-				{$this->esc($tsctn->getToType())},
-				{$this->esc($tsctn->getToName())},
-				{$this->esc($tsctn->getToAccount())},
-				{$tsctn->getAmount()},
-				{$tsctn->getDetails()},
+		$query = "INSERT INTO transactions VALUES (
+				{$this->esc($tran->getFromType())},
+				{$this->esc($tran->getFromName())},
+				{$this->esc($tran->getFromAccount())},
+				{$this->esc($tran->getToType())},
+				{$this->esc($tran->getToName())},
+				{$this->esc($tran->getToAccount())},
+				{$tran->getAmount()},
+				{$this->esc($tran->getDetails())},
 				$now
-				);");
+				);";
+		$this->db->exec($query);
 	}
 	public function esc($str){
 		return "'{$this->db->escapeString($str)}'";

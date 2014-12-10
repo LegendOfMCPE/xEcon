@@ -154,10 +154,10 @@ class MysqliDataProvider extends DataProvider{
 		}
 	}
 	public function deleteEntity($uniqueName){
-		$tokens = explode("/", $uniqueName);
+		list($type, $name) = explode("/", $uniqueName);
 		$this->db->query(<<<EOQ
-DELETE FROM {$this->atn} WHERE ent_type = '$tokens[0]' AND ent_name = '$tokens[1]';
-DELETE FROM {$this->ltn} WHERE ent_type = '$tokens[0]' AND ent_name = '$tokens[1]';
+DELETE FROM {$this->atn} WHERE ent_type = '$type' AND ent_name = '$name';
+DELETE FROM {$this->ltn} WHERE ent_type = '$type' AND ent_name = '$name';
 EOQ
 );
 	}

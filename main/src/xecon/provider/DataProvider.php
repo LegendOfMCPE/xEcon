@@ -33,29 +33,34 @@ abstract class DataProvider{
 	 * @return bool whether the IP is already registered
 	 */
 	public abstract function touchIP($ip);
+	/**
+	 * This function is only supposed to be called when {@link Entity::initDefaultAccounts()} is called.
+	 * @param PlayerEnt $ent
+	 * @return int
+	 */
 	public function checkPlayer(PlayerEnt $ent){
 		$ent->acquire();
 		if(!$ent->valid()){
-//			throw new \BadMethodCallException("Trying to check default money for an offline player");
+			//			throw new \BadMethodCallException("Trying to check default money for an offline player");
 			return -1;
 		}
-		else{
-			if(!$this->touchIP($ent->get()->getAddress()) or $this->getMain()->isGiveForEachName()){
-				// touch IP anyways, so don't put touchIP() behind the "or"!
-				$this->giveDefault($ent);
-				return 1;
+		if(!$this->touchIP($ent->get()->getAddress()) or $isName = $this->getMain()->isGiveForEachName()){
+			// touch IP anyways, so don't put touchIP() behind the "or"!
+			$this->giveDefault($ent);
+			if(!isset($isName)){
+				$this->getMain()->getLogger()->info("Registering new IP: {$ent->get()->getAddress()}");
 			}
-			else{
-				return 0;
-			}
+			return 1;
 		}
+		return 0;
 	}
 	public function giveDefault(PlayerEnt $ent){
+		$this->getMain()->getLogger()->info("Giving default money to $ent");
 		$cash = $ent->getAccount(PlayerEnt::ACCOUNT_CASH);
 		$bank = $ent->getAccount(PlayerEnt::ACCOUNT_BANK);
 		$service = $this->getMain()->getService()->getService(Service::ACCOUNT_OPS);
-		$service->pay($cash, $this->getMain()->getDefaultCashMoney(), "Initial capital");
-		$service->pay($bank, $this->getMain()->getDefaultBankMoney(), "Initial capital");
+		$service->pay($cash, $this->getMain()->getDefaultCashMoney(), "Initial cash capital");
+		$service->pay($bank, $this->getMain()->getDefaultBankMoney(), "Initial bank capital");
 	}
 	public function close(){
 

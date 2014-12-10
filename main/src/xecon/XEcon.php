@@ -144,19 +144,19 @@ class XEcon extends PluginBase implements Listener{
 		return $this->getConfig()->get("player account")["bank"]["overdraft"];
 	}
 	public function getDefaultBankMoney(){
-		return $this->getConfig()->get("player accont")["default"]["bank"];
+		return $this->getConfig()->get("player account")["default"]["bank"];
 	}
 	public function getDefaultCashMoney(){
-		return $this->getConfig()->get("player accont")["default"]["cash"];
+		return $this->getConfig()->get("player account")["default"]["cash"];
 	}
 	public function getMaxBankMoney(){
-		return $this->getConfig()->get("player accont")["max"]["bank"];
+		return $this->getConfig()->get("player account")["max"]["bank"];
 	}
 	public function getMaxCashMoney(){
-		return $this->getConfig()->get("player accont")["max"]["cash"];
+		return $this->getConfig()->get("player account")["max"]["cash"];
 	}
 	public function isGiveForEachName(){
-		return $this->getConfig()->get("player accont")["default"]["give for each ip"];
+		return $this->getConfig()->get("player account")["default"]["give for each ip"];
 	}
 	public function onJoin(PlayerJoinEvent $evt){
 		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer(), $this);
@@ -178,7 +178,7 @@ class XEcon extends PluginBase implements Listener{
 		return $this->service;
 	}
 	public function logTransaction(Account $from, Account $to, $amount, $details = "None"){
-		$this->log->logTransaction(new Transaction($from, $to, $amount, $details));
+		$this->log->logTransaction(new Transaction($from, null, null, $to, null, null, $amount, $details));
 	}
 	/**
 	 * @param string|null $fromType
@@ -208,18 +208,20 @@ class XEcon extends PluginBase implements Listener{
 	public function getPlayerEnt($name, $create = true){
 		$this->collectGarbage();
 		if($name instanceof Player){
+			$player = $name;
 			$name = $name->getName();
 		}
 		$name = strtolower($name);
-		$realName = $name;
 		$name = PlayerEnt::ABSOLUTE_PREFIX . "/$name";
 		if(!isset($this->ents[$name])){
 			if(!$create){
 				return false;
 			}
-			new PlayerEnt($realName, $this); // It will automatically register to addEntity() in the constructor
+			new PlayerEnt(isset($player) ? $player:$name, $this); // It will automatically register to addEntity() in the constructor
 		}
-		return $this->ents[$name]->get();
+		$ent = $this->ents[$name]->get();
+		$ent->acquire();
+		return $ent;
 	}
 	/**
 	 * @param Entity $entity
