@@ -3,7 +3,8 @@
 namespace xecon\tax\tax;
 
 interface Tax{
-	public function getName();
-	public function init(array $args);
-	public function getPlugin();
+	public function __construct(array $args, TaxWrapper $wrapper);
+	public function getType();
+	public function getSourcePlugin();
+	public function execute($ent);
 }

@@ -21,7 +21,13 @@ class Service{
 		$this->addAccount("BankLoanSource", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);
 	}
 	public function registerService($name){
-		$this->addAccount($name, (int) ceil(PHP_INT_MAX / 2));
+		try{
+			$this->addAccount($name, (int) ceil(PHP_INT_MAX / 2));
+			return true;
+		}
+		catch(\InvalidArgumentException $e){
+			return false;
+		}
 	}
 	public function getService($name){
 		return $this->getAccount($name);

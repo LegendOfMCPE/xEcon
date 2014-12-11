@@ -20,6 +20,7 @@ use xecon\log\LogProvider;
 use xecon\log\MysqliLogProvider;
 use xecon\log\SQLite3LogProvider;
 use xecon\log\Transaction;
+use xecon\provider\DataProvider;
 use xecon\provider\JSONDataProvider;
 use xecon\provider\MysqliDataProvider;
 use xecon\provider\SQLite3DataProvider;
@@ -103,7 +104,9 @@ class XEcon extends PluginBase implements Listener{
 //		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
 	}
 	public function onDisable(){
-		$this->dataProvider->close();
+		if($this->dataProvider instanceof DataProvider){
+			$this->dataProvider->close();
+		}
 		if($this->universalMysqli instanceof \mysqli){
 			$this->universalMysqli->close(); // disable dependencies too
 		}
@@ -239,6 +242,14 @@ class XEcon extends PluginBase implements Listener{
 	 */
 	public function getEntity($uniqueName){
 		return isset($this->ents[strtolower($uniqueName)]) ? $this->ents[strtolower($uniqueName)]->get():false;
+	}
+	/**
+	 * @return PlayerEnt[]
+	 */
+	public function getPlayerEnts(){
+		return array_map(function(Session $session){
+			return $session->getEntity();
+		}, $this->sessions);
 	}
 	public function collectGarbage(){
 		foreach($this->ents as $offset => $ent){

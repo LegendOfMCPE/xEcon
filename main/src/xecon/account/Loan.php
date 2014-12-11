@@ -7,6 +7,8 @@ use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 
 class Loan implements Transactable{
+	/** @var string */
+	protected $name;
 	/** @var int */
 	protected $due;
 	/** @var Account */
@@ -49,7 +51,7 @@ class Loan implements Transactable{
 			$lastInterestUpdate = time();
 		}
 		// saving fields
-		$this->name = $name;
+		$this->name = strtolower($name);
 		$this->creditor = $creditor;
 		$this->amount = $amount;
 		$this->owner = $owner;

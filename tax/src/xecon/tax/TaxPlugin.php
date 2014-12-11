@@ -5,58 +5,42 @@ namespace xecon\tax;
 use pocketmine\event\Listener;
 use pocketmine\event\plugin\PluginDisableEvent;
 use pocketmine\plugin\PluginBase;
-use xecon\tax\tax\Tax;
-use xecon\utils\CallbackPluginTask;
+use xecon\tax\tax\TaxWrapper;
 
 class TaxPlugin extends PluginBase implements Listener{
 	/** @var \xecon\account\Account */
 	private $service;
-	/** @var Tax[] */
-	private $taxes = [];
+	/** @var TaxWrapper[] */
+	private $taxWrappers = [];
+	/** @var \xecon\XEcon */
+	private $xEcon;
+	private $freq;
+	/** @var ExemptionCommandManager */
+	private $cvMgr;
 	public function onEnable(){
-		/** @var \xecon\XEcon $xEcon */
-		$xEcon = $this->getServer()->getPluginManager()->getPlugin("xEcon");
-		$xEcon->getService()->registerService("TaxColl");
-		$this->service = $xEcon->getService()->getService("TaxColl");
+		$this->xEcon = $this->getServer()->getPluginManager()->getPlugin("xEcon");
+		$this->xEcon->getService()->registerService("TaxColl");
+		$this->service = $this->xEcon->getService()->getService("TaxColl");
 		$this->saveDefaultConfig();
-		$freq = floatval($this->getConfig()->get("frequency"));
-		switch($u = $this->getConfig()->get("unit")){
-			case "hour":
-			case "hours":
-				$freq *= 60;
-			case "minute":
-			case "minutes":
-				$freq *= 60;
-			case "second":
-			case "seconds":
-				$freq *= 20;
-				break;
-			default:
-				trigger_error("xEcon tax config unidentified unit: \"$u\". The default value (minute) will be used.", E_USER_WARNING);
-				$freq *= 1200;
-		}
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CollectTaxTask($this), $freq, $freq);
-		$this->getServer()->getScheduler()->scheduleDelayedTask(new CallbackPluginTask($this, array($this, "onPostRegister")), 1); // give other plugins the chance to register
+		$this->loadTaxes();
+		$this->freq = self::hcf_array(array_map(function(TaxWrapper $wrapper){
+			return $wrapper->getFrequency();
+		}, $this->taxWrappers));
+		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CollectTaxTask($this), $this->freq, $this->freq);
+		$this->cvMgr = new ExemptionCommandManager($this);
 	}
-	public function registerTaxType(Tax $type){
-		$this->taxes[$type->getName()] = $type;
-	}
-	public function onPostRegister(){
+	private function loadTaxes(){
 		foreach($this->getConfig()->get("taxes") as $tax){
-			$type = $tax["type"];
-			if(!isset($this->taxes[$type])){
-				$this->getLogger()->notice("Tax type \"$type\" not found. The tax will not be loaded this time.");
-			}
-			$this->taxes[] = $this->taxes[$type]->init($tax);
+			$wrapper = new TaxWrapper($this, $tax);
+			$this->taxWrappers[$wrapper->getName()] = $wrapper;
 		}
-		$this->getLogger()->info(count($this->taxes)." taxes have been loaded.");
 	}
 	/**
-	 * @return tax\Tax[]
+	 * @return tax\TaxWrapper[]
 	 */
-	public function getTaxes(){
-		return $this->taxes;
+	public function getTaxWrappers(){
+		return $this->taxWrappers;
 	}
 	public function onOtherDisable(PluginDisableEvent $event){
 	}
@@ -65,5 +49,34 @@ class TaxPlugin extends PluginBase implements Listener{
 	 */
 	public function getService(){
 		return $this->service;
+	}
+	public function getXEcon(){
+		return $this->xEcon;
+	}
+	public function getFrequencyHCF(){
+		return $this->freq;
+	}
+	// math lib. modified from: http://me.dt.in.th/2010/01/hcf-function-in-php/
+	public static function hcf($a, $b) {
+		if($b > $a){
+			return self::hcf($b, $a);
+		}
+		if($b == 0){
+			return $a;
+		}
+		return self::hcf($b, $a % $b);
+	}
+	public static function hcf_array($array) {
+		if(count($array) < 1){
+			return false;
+		}
+		if(count($array) === 1){
+			return $array[0];
+		}
+		array_unshift($array, self::hcf(array_shift($array), array_shift($array)));
+		return self::hcf_array($array);
+	}
+	public function getCommandValueManager(){
+		return $this->cvMgr;
 	}
 }

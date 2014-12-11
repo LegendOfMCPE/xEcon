@@ -1,33 +1,55 @@
 ---
-## how often should tax be collected?
-# It should be <frequency> <unit>. Enter a number for frequency.
-frequency: 30
-# Put second, seconds, minute, minutes, hour or hours
-unit: minute
-## Types of tax
-# Types of tax include "base" and "salary". The usage of each is explained below. You may remove any of them if you like.
+### Taxes to collect
+# Each tax here is collected independently in the order specified here.
+# Each tax must have a "name", a "type", a "frequency" and a "source account". You can also add an optional "exemptions" property. Each type has extra options to fill in.
+# Taxes are only collected for online players.
+## Tax "name":
+# It can be any text, but it must be unique or some taxes won't load.
+## Tax "type":
+# It defines how much should be collected for the tax.
+# BaseTax: collect a fixed amount of tax from a certain account
+  # amount: the amount to receive every time. This must be a number. Decimal numbers and negative numbers are accepted.
+# AssetsTax: collect a certain percentage from a certain account of each player
+  # percentage: the percentage of the account's balance to take. Decimal numbers and negative numbers are accepted.
+# SalaryTax: collects a percentage of salary given by xEcon_Jobs. If xEcon_Jobs is not enabled, a warning will be shown and taxes of this type will be disabled.
+  # percentage: the percentage of the player's salary received since last collection of this tax to be collected.
+  # allowance (optional): the amount of tax not to count
+  # ignored jobs: jobs that are
+# External taxes can be enabled using the xEcon_Tax API. For how to make them, refer to the xEcon Integrated API documentation.
+## Tax "frequency":
+# It defines how often the tax is collected.
+# Format: [time, unit]
+# time is a number (decimal numbers are allowed)
+# unit must be one of "tick", "sec" (i.e. 20 ticks, one second), "min" (i.e. 1200 ticks, one minute) or "hr" (i.e. 72000 ticks, one hour).
+# e.g. frequency: [1.5, min]
+## Tax "source account":
+# It defines from which account(s) the tax should be collected.
+# The account name, case-insensitive.
+# If you want to do it on multiple accounts, separate them by commas (,) and put them in square brackets ([])
+## Tax "exemptions":
+# A statement used to filter out players who shouldn't receive tax. In other words, if a statement is true for a player, that type will not be collected for him.
+# A statement is composed of substatements enclosed by parentheses (()) and joined by "AND" or "OR".
+# Formats for a substatement:
+# isop <--- won't collect if player is op
+# notop <--- won't collect if player isn't op
+# account <account name> <|>|<=|>=|=|<> <amount> <--- won't collect if the balance of <account name> of the player is smaller than (<), greater than (>), smaller than or equal to (<=), larger than or equal to (>=), equal to (=) or not equal to (<>) <amount>.
+# Different tax types may have additional formats to choose.
+# Nesting substatements in substatements is accepted too.
+
 taxes:
-- type: base
-  # name of the tax. if you leave this bank, it will become the type name + the account name
-  name: standard tax
-  account: Bank
-  amount: 100
-  # expressions documentation can be found at https://github.com/LegendOfMCPE/xEcon/wiki
-  exemptions:
-  - op
-  # actions on tax evasion (not enough money to pay tax). you can put "ban name", "ban ip"
-  on tax evasion:
-  - ban name
-- type: base
-  name: rich people's tax
-  account: Bank
-  amount: 500
-  whitelist:
-  - notop AND ACCOUNT bank > 100000
-- type: salary
-  account: Bank
-  percentage: 13
-  exemptions:
-  - TOTALSALARY < 4000
-  - op
+  - name: Rich people's tax
+    type: BaseTax
+    frequency: [1, hr]
+    source account: bank
+    exemptions: (compare account/bank < 100000) or (isop)
+  - name: Standard tax
+    type: AssetsTax
+    frequency: [30, min]
+    source account: [bank, cash]
+    exemptions: (isop)
+  - name: Standard tax
+    type: \xecon\jobs\SalaryTax
+    frequency: [24, hr]
+    source account: bank
+    exemptions: (isop) OR ((compare jobs:total_salary < 1000) AND (compare account/bank < 5000))
 ...

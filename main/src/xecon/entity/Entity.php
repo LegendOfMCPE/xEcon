@@ -27,8 +27,18 @@ trait Entity{
 	public function getMain(){
 		return $this->main;
 	}
+	/**
+	 * @param string $name
+	 * @param number $defaultAmount
+	 * @param int|number $maxContainable
+	 * @param int $minAmount
+	 * @throws \InvalidArgumentException
+	 */
 	public function addAccount($name, $defaultAmount, $maxContainable = PHP_INT_MAX, $minAmount = 0){
 		$name = strtolower($name);
+		if(isset($this->accounts[$name])){
+			throw new \InvalidArgumentException("Account $name already exists for $this");
+		}
 		$this->accounts[$name] = new Account($name, $defaultAmount, $this);
 		$this->accounts[$name]->setMaxContainable($maxContainable);
 		$this->accounts[$name]->setMinAmount($minAmount);

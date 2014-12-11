@@ -1,6 +1,0 @@
----
-data provider:
-  type: sqlite3
-  sqlite3:
-    path: shops.sq3
-...
