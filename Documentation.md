@@ -12,12 +12,12 @@ Let's look at another example. [PocketFactions](https://github.com/LegendOfMCPE/
 
 To avoid collisions of plugins of different entity types, each entity has a "type" and a "name". For players, it is `Player/<player name in lowercase>`. If you use a JSON database, players will be saved in `entities/Player$<player lowercase name>.json`.
 
-As you can see from a database, each entity has "accounts" and "loans". For players, 
+As you can see from a database, each entity has "accounts" and "loans". Each account stores some money with a maximum amount and minimum amount. Each loan stores more data. For details, please read documentation about the database.
 
 # xEcon Core
 
 # xEcon Tax
 ## Tax config.yml setup
-
+TODO: copy&paste
 
 # xEcon Jobs
