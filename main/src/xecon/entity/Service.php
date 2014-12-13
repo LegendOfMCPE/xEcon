@@ -14,7 +14,7 @@ class Service{
 		$this->initializeXEconEntity($main);
 	}
 	public function sendMessage($msg, $level = \LogLevel::INFO){
-		$this->main->getLogger()->log($level, $msg);
+		$this->getMain()->getLogger()->log($level, $msg);
 	}
 	public function initializeDefaultAccounts(){
 		$this->addAccount("Operators", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);

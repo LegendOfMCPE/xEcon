@@ -12,10 +12,10 @@ trait Entity{
 	/** @var Loan[] */
 	private $loans = [];
 	/** @var XEcon */
-	protected $main;
+	private $_main;
 	protected function initializeXEconEntity(XEcon $main){
-		$this->main = $main;
-		$this->main->getDataProvider()->loadEntity($this);
+		$this->_main = $main;
+		$this->getMain()->getDataProvider()->loadEntity($this);
 		$this->getMain()->addEntity($this);
 	}
 	public function getInventory($account){
@@ -25,7 +25,7 @@ trait Entity{
 	 * @return XEcon
 	 */
 	public function getMain(){
-		return $this->main;
+		return $this->_main;
 	}
 	/**
 	 * @param string $name
