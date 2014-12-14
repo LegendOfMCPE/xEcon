@@ -7,7 +7,7 @@ player account:
     bank: 1000
     cash: 20 # this is the amount in an "octopus card" in Hong Kong when you buy a new one :D
   max:
-    bank: 100000
+    bank: 500000
     cash: 1000 # this is the maximum amount that can be saved in an "octopus card" in Hong Kong xD
   bank:
     # Set how much money below $0 can a bank account have.

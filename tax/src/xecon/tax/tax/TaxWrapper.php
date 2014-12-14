@@ -15,8 +15,8 @@ class TaxWrapper{
 	private $frequency;
 	/** @var string[] */
 	private $sourceAccounts;
-	/** @var TaxExemption */
-	private $exemptions;
+	/** @var bool */
+	private $exemptOps;
 	public function __construct(TaxPlugin $plugin, array $args){
 		$this->plugin = $plugin;
 		$this->name = $args["name"];
@@ -59,7 +59,7 @@ class TaxWrapper{
 				break;
 		}
 		$this->sourceAccounts = $args["source account"];
-		$this->exemptions = isset($args["exemptions"]) ? new TaxExemption($this->plugin, $args["exemptions"]):new ConstTaxExemption($this->plugin, false);
+		$this->exemptOps = $args["exempt ops"];
 	}
 	/**
 	 * @return TaxPlugin
@@ -93,9 +93,10 @@ class TaxWrapper{
 	}
 	public function iterate(){
 		foreach($this->plugin->getXEcon()->getPlayerEnts() as $ent){
-			if(!$this->exemptions->isExempted($ent->getPlayer(), $ent)){
-				$this->tax->execute($ent);
+			if($ent->getPlayer()->isOp() and $this->exemptOps){
+				continue;
 			}
+			$this->tax->execute($ent);
 		}
 	}
 }
