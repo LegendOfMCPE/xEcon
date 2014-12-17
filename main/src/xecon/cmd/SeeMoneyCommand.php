@@ -7,7 +7,7 @@ use pocketmine\Player;
 use xecon\account\Account;
 use xecon\entity\PlayerEnt;
 
-class SeeMoneyCommand extends PlayerXEconCommand{
+class SeeMoneyCommand extends XEconCommand{
 	protected function getName_(){
 		return "seemoney";
 	}
@@ -20,30 +20,33 @@ class SeeMoneyCommand extends PlayerXEconCommand{
 	protected function getAliases_(){
 		return "see\$";
 	}
-	public function onRun(PlayerEnt $entity, Player $player, array $args){
+	public function execute_(CommandSender $sender, array $args){
+		if(!isset($args[1]) and !($sender instanceof Player)){
+			return "Usage for non-players: /seemoney <account> <player>";
+		}
 		$type = PlayerEnt::ABSOLUTE_PREFIX;
-		$name = $player->getName();
+		$name = $sender->getName();
 		$account = "Cash";
 		if(isset($args[0])){
-			$type = $args[0];
+			$account = $args[0];
 		}
 		if(isset($args[1])){
 			$name = $args[1];
 		}
 		if(isset($args[2])){
-			$account = $args[2];
+			$type = $args[2];
 		}
 		$permission = -1;
-		if($player->hasPermission("xecon.cmd.see.all")){
+		if($sender->hasPermission("xecon.cmd.see.all")){
 			$permission = 3;
 		}
-		elseif($player->hasPermission("xecon.cmd.see.players")){
+		elseif($sender->hasPermission("xecon.cmd.see.players")){
 			$permission = 2;
 		}
-		elseif($player->hasPermission("xecon.cmd.see.self")){
+		elseif($sender->hasPermission("xecon.cmd.see.self")){
 			$permission = 1;
 		}
-		elseif($player->hasPermission("xecon.cmd.see.cash")){
+		elseif($sender->hasPermission("xecon.cmd.see.cash")){
 			$permission = 0;
 		}
 		if($permission < 0){
@@ -52,7 +55,7 @@ class SeeMoneyCommand extends PlayerXEconCommand{
 		if($permission < 1 and strtolower($account) !== "cash"){
 			return "You don't have permission to check balance of account $account.";
 		}
-		if($permission < 2 and strtolower($name) !== strtolower($player->getName())){
+		if($permission < 2 and strtolower($name) !== strtolower($sender->getName())){
 			return "You don't have permission to check balance of other players.";
 		}
 		if($permission < 3 and strtolower($type) !== strtolower(PlayerEnt::ABSOLUTE_PREFIX)){
