@@ -5,7 +5,9 @@ namespace xecon\entity;
 use xecon\XEcon;
 
 class Service{
-	use Entity;
+	use Entity{
+		save as entity_save;
+	}
 	const TYPE = "Server";
 	const NAME = "Services";
 	const ACCOUNT_OPS = "Operators";
@@ -17,12 +19,16 @@ class Service{
 		$this->getMain()->getLogger()->log($level, $msg);
 	}
 	public function initializeDefaultAccounts(){
-		$this->addAccount("Operators", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);
-		$this->addAccount("BankLoanSource", (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 0, false);
+		$bits = PHP_INT_SIZE << 3 - 1;
+		$PHP_INT_MIN = 1 << $bits;
+		$this->addAccount("Operators", PHP_INT_MAX >> 1, PHP_INT_MAX, $PHP_INT_MIN);
+		$this->addAccount("BankLoanSource", PHP_INT_MAX >> 1, PHP_INT_MAX, $PHP_INT_MIN);
+		$this->entity_save();
 	}
 	public function registerService($name){
 		try{
-			$this->addAccount($name, (int) ceil(PHP_INT_MAX / 2));
+			$this->addAccount($name, (int) ceil(PHP_INT_MAX / 2), PHP_INT_MAX, 1 << PHP_INT_SIZE << 3 - 1);
+			$this->entity_save();
 			return true;
 		}
 		catch(\InvalidArgumentException $e){
@@ -38,4 +44,10 @@ class Service{
 	public function getAbsolutePrefix(){
 		return self::TYPE;
 	}
+	public function refillAll(){
+		foreach($this->getAccounts() as $account){
+			$account->setAmount(PHP_INT_MAX >> 1);
+		}
+	}
+	public function save(){}
 }

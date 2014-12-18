@@ -39,9 +39,12 @@ class XEcon extends PluginBase implements Listener{
 	private $dataProvider;
 	/** @var \mysqli|null */
 	private $universalMysqli = null;
+	/** @var XEconConfig */
+	private $xeconConfig;
 	public function onEnable(){
 		$this->saveDefaultConfig();
-		$data = $this->getConfig()->get("data provider");
+		$this->xeconConfig = new XEconConfig($this->getConfig()->getAll());
+		$data = $this->getXEconConfiguration()->getDataProviderOpts();
 		switch($name = strtolower($data["name"])){
 			case "sqlite3":
 				$this->dataProvider = new SQLite3DataProvider($this, $data[$name]);
@@ -71,7 +74,7 @@ class XEcon extends PluginBase implements Listener{
 				}
 				$this->dataProvider = new MysqliDataProvider($this, $db, $data[$name]);
 		}
-		$data = $this->getConfig()->get("logs");
+		$data = $this->getXEconConfiguration()->getLogsOpts();
 		switch($name = strtolower($data["name"])){
 			case "sqlite3":
 				$this->log = new SQLite3LogProvider($this, $data[$name]["database path"]);
@@ -113,7 +116,7 @@ class XEcon extends PluginBase implements Listener{
 	}
 	public function getUniversalMysqliDatabase(Plugin $ctx, $disableOnFailure = true){
 		if(!($this->universalMysqli instanceof \mysqli)){
-			$data = $this->getConfig()->get("universal mysqli database")["connection details"];
+			$data = $this->getXEconConfiguration()->getUniMysqlDetails();
 			$this->universalMysqli = new \mysqli($data["host"], $data["username"], $data["password"], $data["database"], $data["port"]);
 			if($this->universalMysqli->connect_error){
 				$ctx->getLogger()->critical("Failed to connect to the xEcon universal MySQL database! " .
@@ -147,23 +150,26 @@ class XEcon extends PluginBase implements Listener{
 			new SeeMoneyCommand($this),
 		]);
 	}
+	public function getXEconConfiguration(){
+		return $this->xeconConfig;
+	}
 	public function getMaxBankOverdraft(){
-		return $this->getConfig()->get("player account")["bank"]["overdraft"];
+		return $this->getXEconConfiguration()->getMaxOverdraft();
 	}
 	public function getDefaultBankMoney(){
-		return $this->getConfig()->get("player account")["default"]["bank"];
+		return $this->getXEconConfiguration()->getDefaultBank();
 	}
 	public function getDefaultCashMoney(){
-		return $this->getConfig()->get("player account")["default"]["cash"];
+		return $this->getXEconConfiguration()->getDefaultCash();
 	}
 	public function getMaxBankMoney(){
-		return $this->getConfig()->get("player account")["max"]["bank"];
+		return $this->getXEconConfiguration()->getMaxBank();
 	}
 	public function getMaxCashMoney(){
-		return $this->getConfig()->get("player account")["max"]["cash"];
+		return $this->getXEconConfiguration()->getMaxCash();
 	}
-	public function isGiveForEachName(){
-		return $this->getConfig()->get("player account")["default"]["give for each ip"];
+	public function isDefaultForIps(){
+		return $this->getXEconConfiguration()->isDefaultForIps();
 	}
 	public function onJoin(PlayerJoinEvent $evt){
 		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer(), $this);

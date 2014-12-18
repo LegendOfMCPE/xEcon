@@ -81,4 +81,10 @@ universal mysqli database:
     port: 3306
 
 ### TODO support StatsCore universal database
+
+# Report errors to LegendOfMCPE error tracker
+report errors:
+  enabled: true # whether to report
+  host: pemapmodder.zapto.org/public-hooks/plugin-report.php
+  timeout: 5
 ...

@@ -4,6 +4,7 @@ namespace xecon\cmd;
 
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
+use xecon\account\Account;
 use xecon\entity\PlayerEnt;
 use xecon\entity\Service;
 use xecon\XEcon;
@@ -63,17 +64,20 @@ class RelativeChangeMoneyCommand extends XEconCommand{
 				return "$name is not online! Try adding '.e' if the player is offline.";
 			}
 			$ent = $this->getPlugin()->getPlayerEnt($player->getName());
+			if(!($ent instanceof PlayerEnt)){
+				throw new \RuntimeException("\$ent is not instance of PlayerEnt. Dump of \$ent: " . var_export($ent, true));
+			}
 		}
 		$acc = $ent->getAccount($this->accName);
 		$service = $this->getPlugin()->getService()->getService(Service::ACCOUNT_OPS);
 		if($this->add){
-			$service->pay($acc, $amount, implode(" ", $args));
-			return "\$$amount has been given to {$ent->getName()}.";
+			if($service->pay($acc, $amount, implode(" ", $args), true, $failureReason)){
+				return "\$$amount has been given to {$ent->getName()}.";
+			}
+			return Account::transactionFailiureIntToString("Cannot add $this->accHumanName to target player because $failureReason");
 		}
-		else{
-			return $acc->pay($service, $amount, implode(" ", $args)) ?
-				"\$$amount has been taken from {$ent->getName()}.":
-				"{$ent->getName()} doesn't have so much {$this->accHumanName}";
-		}
+		return $acc->pay($service, $amount, implode(" ", $args), false, $failureReason) ?
+			"\$$amount has been taken from {$ent->getName()}.":
+			"Cannot remove $this->accHumanName from target player because " . Account::transactionFailiureIntToString($failureReason);
 	}
 }

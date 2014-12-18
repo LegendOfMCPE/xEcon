@@ -10,6 +10,28 @@ use xecon\entity\Entity;
 use xecon\entity\Service;
 
 class Account implements InventoryHolder, Transactable{
+	const FAILURE_SUCCESS = 0;
+	const FAILURE_BELOW_MIN_AMOUNT = 1;
+	const FAILURE_EXCEEDS_MAX_CONTAINABLE = 2;
+//	const FAILURE_CANNOT_PAY_TO_NON_ACCOUNT = 4;
+	public static $transactionFailureIntToStringMap = [
+		self::FAILURE_SUCCESS => "transaction success",
+		self::FAILURE_BELOW_MIN_AMOUNT => "the paying account does not have enough money to pay",
+		self::FAILURE_EXCEEDS_MAX_CONTAINABLE => "the receiving account does not have enough space to receive the money",
+//		self::FAILURE_CANNOT_PAY_TO_NON_ACCOUNT => "target account is not an account"
+	];
+	public static function transactionFailiureIntToString($int){
+		$out = [];
+		foreach(self::$transactionFailureIntToStringMap as $i => $s){
+			if($int & $i){
+				$out[] = $s;
+			}
+		}
+		if(count($out) === 0){
+			return "of unknown reason";
+		}
+		return implode(" and/or ", $out);
+	}
 	/** @var string */
 	protected $name;
 	/** @var float */
@@ -91,7 +113,7 @@ class Account implements InventoryHolder, Transactable{
 		return $this->setAmount($this->getAmount() - $amount);
 	}
 	/**
-	 * This raw function is only for internal use. Calling this method is discouraged unless logging of transactions is unwanted. Call Account::pay() instead.
+	 * This raw function is only for internal use. Calling this method is discouraged unless this is not a transaction. Call Account::pay() instead.
 	 * @param int $amount
 	 * @return bool
 	 */
@@ -158,21 +180,30 @@ class Account implements InventoryHolder, Transactable{
 	 * @param number $amount
 	 * @param string $detail
 	 * @param bool $force
+	 * @param int $failureReason
 	 * @return bool
 	 */
-	public function pay(Transactable $other, $amount, $detail = "None", $force = false){
+	public function pay(Transactable $other, $amount, $detail = "None", $force = false, &$failureReason = self::FAILURE_SUCCESS){
 		if($detail === ""){
 			$detail = "None";
 		}
 		if(!$this->canPay($amount)){
 			if(!$force){
+				$failureReason = self::FAILURE_BELOW_MIN_AMOUNT;
 				return false;
 			}
 		}
-		if($other->add($amount) and $this->take($amount) and ($other instanceof Account)){ // why did I mess these two up...
-			$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
+		if(!$other->canReceive($amount)){
+			$failureReason = self::FAILURE_EXCEEDS_MAX_CONTAINABLE;
+			return false;
+		}
+		if($other->add($amount) and $this->take($amount)){ // why did I mess these two up...
+			if($other instanceof Account){
+				$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
+			}
 			return true;
 		}
+		$failureReason = self::FAILURE_EXCEEDS_MAX_CONTAINABLE | self::FAILURE_BELOW_MIN_AMOUNT;
 		return false;
 	}
 	/**

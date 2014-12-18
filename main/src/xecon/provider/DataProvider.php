@@ -44,7 +44,7 @@ abstract class DataProvider{
 			//			throw new \BadMethodCallException("Trying to check default money for an offline player");
 			return -1;
 		}
-		if(!$this->touchIP($ent->get()->getAddress()) or $isName = $this->getMain()->isGiveForEachName()){
+		if(!$this->touchIP($ent->get()->getAddress()) or $isName = !$this->getMain()->isDefaultForIps()){
 			// touch IP anyways, so don't put touchIP() behind the "or"!
 			$this->giveDefault($ent);
 			if(!isset($isName)){
