@@ -9,20 +9,21 @@ use xecon\entity\Service;
 use xecon\XEcon;
 
 class SetMoneyCommand extends XEconCommand{
-	private $tarAccName;
-	private $accGenName;
+	private $tarAccName, $accGenName, $cmdName;
 	/**
 	 * @param XEcon $main
 	 * @param string $tarAccName
 	 * @param string $accGenName
+	 * @param $cmdName
 	 */
-	public function __construct(XEcon $main, $tarAccName, $accGenName){
+	public function __construct(XEcon $main, $tarAccName, $accGenName, $cmdName){
 		$this->tarAccName = $tarAccName;
 		$this->accGenName = $accGenName;
+		$this->cmdName = $cmdName;
 		parent::__construct($main);
 	}
 	public function getName_(){
-		return "set$this->accGenName";
+		return "$this->cmdName";
 	}
 	public function getDesc_(){
 		return "Set the player's {$this->accGenName} to a specified amount";
@@ -31,7 +32,7 @@ class SetMoneyCommand extends XEconCommand{
 		return "/{$this->getName_()} <player> <amount> [.e] [details ...](add '.e' if the player might be offline)";
 	}
 	public function getAliases_(){
-		return $this->accGenName === "cash" ? ["set$"]:[];
+		return $this->cmdName === "setcash" ? ["set$"]:[];
 	}
 	public function execute_(CommandSender $sender, array $args){
 		if(!isset($args[1])){
@@ -61,7 +62,9 @@ class SetMoneyCommand extends XEconCommand{
 		$acc = $ent->getAccount($this->tarAccName);
 		$src = $this->getPlugin()->getService()->getService(Service::ACCOUNT_OPS);
 		$details = implode(" ", array_slice($args, 2 + ($e ? 1:0)));
-		$acc->transactWithAccountTo($amount, $src, strlen(trim($details)) > 0 ? trim($details):"{$this->accGenName} set by a command");
-		return true;
+		if($acc->transactWithAccountTo($amount, $src, strlen(trim($details)) > 0 ? trim($details):"{$this->accGenName} set by a command", $failureReason)){
+			return ucfirst($this->accGenName) . " of {$ent->getName()} has been set to \$$amount";
+		}
+		return "Failed to set money of $this->accGenName of {$ent->getName()} to \$$amount because $failureReason";
 	}
 }

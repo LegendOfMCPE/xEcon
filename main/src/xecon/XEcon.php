@@ -140,8 +140,8 @@ class XEcon extends PluginBase implements Listener{
 	}
 	private function registerCommands(){
 		$this->getServer()->getCommandMap()->registerAll("xecon", [
-			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_CASH, "cash"),
-			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_BANK, "bank money"),
+			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_CASH, "cash", "setcash"),
+			new SetMoneyCommand($this, PlayerEnt::ACCOUNT_BANK, "bank money", "setbank"),
 			new RelativeChangeMoneyCommand($this, "addcash", true, "add to", PlayerEnt::ACCOUNT_CASH, "cash", ["add$"]),
 			new RelativeChangeMoneyCommand($this, "rmcash", false, "take", PlayerEnt::ACCOUNT_CASH, "cash", ["rm$"]),
 			new RelativeChangeMoneyCommand($this, "addbank", true, "add to", PlayerEnt::ACCOUNT_BANK, "bank money"),

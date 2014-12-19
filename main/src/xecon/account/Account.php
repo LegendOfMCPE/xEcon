@@ -210,22 +210,23 @@ class Account implements InventoryHolder, Transactable{
 	 * This is an API method. Developers are encouraged to use either this method or pay().
 	 * @param $amount
 	 * @param Account $other
-	 * @param null $detail
+	 * @param string|null $details
+	 * @param string|null $failiureReason
 	 * @return int
 	 */
-	public function transactWithAccountTo($amount, Account $other, $detail = null){
-		if($detail === null){
-			$detail = "transact to \$$amount";
+	public function transactWithAccountTo($amount, Account $other, $details = null, &$failiureReason = null){
+		if($details === null){
+			$details = "transact to \$$amount";
 		}
 		if($this->getAmount() === $amount){
 			return 0;
 		}
 		if($this->getAmount() > $amount){
-			return $this->pay($other, $this->getAmount() - $amount, $detail) ?
+			return $this->pay($other, $this->getAmount() - $amount, $details, false, $failiureReason) ?
 					($amount - $this->getAmount()):0;
 		}
 		else{
-			return $other->pay($this, $amount - $this->getAmount(), $detail) ?
+			return $other->pay($this, $amount - $this->getAmount(), $details, false, $failiureReason) ?
 					($amount - $this->getAmount()):0;
 		}
 	}
