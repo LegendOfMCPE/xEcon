@@ -67,23 +67,14 @@ class MysqliDataProvider extends DataProvider{
 		$result = $this->db->query("SELECT * FROM {$this->atn} WHERE
 				ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
 				ent_name = '{$this->db->escape_string($entity->getName())}';");
-		$accData = [];
-		while(is_array($dat = $result->fetch_assoc())){
-			$accData[] = $dat;
+		while(is_array($data = $result->fetch_assoc())){
+			$entity->addAccount($data["name"], $data["amount"], $data["max_containable"], $data["min_amount"]);
 		}
 		$result->close();
 		$result = $this->db->query("SELECT * FROM {$this->ltn} WHERE
 				ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
 				ent_name = '{$this->db->escape_string($entity->getName())}';");
-		$loanData = [];
-		while(is_array($dat = $result->fetch_assoc())){
-			$loanData[] = $dat;
-		}
-		$result->close();
-		foreach($accData as $acc){
-			$entity->addAccount($acc["name"], $data["amount"], $data["max_containable"], $data["min_amount"]);
-		}
-		foreach($loanData as $data){
+		while(is_array($data = $result->fetch_assoc())){
 			switch($data["from_type"]){
 				case PlayerEnt::ABSOLUTE_PREFIX:
 					$from = $this->getMain()->getPlayerEnt($data["from_name"])->getAccount($data["from_account"]);
@@ -100,6 +91,7 @@ class MysqliDataProvider extends DataProvider{
 				$data["increase_per_hour"], $data["name"], $data["creation"],
 				$data["original_amount"], $data["last_interest_update"]));
 		}
+		$result->close();
 	}
 	public function saveEntity($entity){
 		$result = $this->db->query("SELECT * FROM {$this->mtn} WHERE

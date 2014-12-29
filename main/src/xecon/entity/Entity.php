@@ -99,7 +99,7 @@ trait Entity{
 	}
 	protected abstract function initializeDefaultAccounts();
 	public function __destruct(){
-		$this->save();
+//		$this->save();
 	}
 	public function save(){
 		$this->getMain()->getDataProvider()->saveEntity($this);

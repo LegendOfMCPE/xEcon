@@ -105,8 +105,14 @@ class XEcon extends PluginBase implements Listener{
 		$this->registerCommands();
 		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "collectGarbage")), 200, 200);
 //		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new CallbackPluginTask($this, array($this, "opQueue"), [], array($this, "opQueue")), 1, 1);
+		foreach($this->getServer()->getOnlinePlayers() as $player){
+			$this->onJoin(new PlayerJoinEvent($player, ""));
+		}
 	}
 	public function onDisable(){
+		foreach($this->getServer()->getOnlinePlayers() as $player){
+			$this->onQuit(new PlayerQuitEvent($player, ""));
+		}
 		if($this->dataProvider instanceof DataProvider){
 			$this->dataProvider->close();
 		}

@@ -72,6 +72,6 @@ class SeeMoneyCommand extends XEconCommand{
 		return "Balance of $acc: \${$acc->getAmount()}";
 	}
 	public function testPermissionSilent(CommandSender $sender){
-		return $sender->hasPermission("xecon.cmd.see.*");
+		return $sender->hasPermission("xecon.cmd.see");
 	}
 }
