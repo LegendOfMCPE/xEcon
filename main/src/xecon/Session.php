@@ -8,7 +8,7 @@ class Session{
 	/** @var PlayerEnt */
 	private $ent;
 	public function __construct($player, XEcon $main){
-		$this->ent = $main->getPlayerEnt($player);
+		$this->ent = $main->getPlayerEnt($player, true, true);
 	}
 	public function onQuit(){
 		$this->ent->onQuit();

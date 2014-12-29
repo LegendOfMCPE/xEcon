@@ -52,9 +52,10 @@ class SetMoneyCommand extends XEconCommand{
 			if(!($p instanceof Player)){
 				return "Player $args[0] is not online! Try adding 'e' at the end of the command if he is offline.";
 			}
-			$ent = $this->getPlugin()->getPlayerEnt($p->getName());
-		}else{
-			$ent = $this->getPlugin()->getPlayerEnt($args[0], false);
+			$ent = $this->getPlugin()->getPlayerEnt($p->getName(), false);
+		}
+		else{
+			$ent = $this->getPlugin()->getPlayerEnt($args[0]);
 			if(!($ent instanceof PlayerEnt)){
 				return "Player $args[0] has not been registered!";
 			}

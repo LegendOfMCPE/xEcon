@@ -21,8 +21,10 @@ abstract class DataProvider{
 	}
 	/**
 	 * @param Entity $entity
+	 * @param bool $create
+	 * @return
 	 */
-	public abstract function loadEntity($entity);
+	public abstract function loadEntity($entity, $create = true);
 	/**
 	 * @param Entity $entity
 	 */

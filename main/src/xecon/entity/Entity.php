@@ -13,9 +13,9 @@ trait Entity{
 	private $loans = [];
 	/** @var XEcon */
 	private $_main;
-	protected function initializeXEconEntity(XEcon $main){
+	protected function initializeXEconEntity(XEcon $main, $create = true){
 		$this->_main = $main;
-		$this->getMain()->getDataProvider()->loadEntity($this);
+		$this->getMain()->getDataProvider()->loadEntity($this, $create);
 		$this->getMain()->addEntity($this);
 	}
 	public function getInventory($account){

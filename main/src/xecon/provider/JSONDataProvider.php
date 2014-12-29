@@ -30,9 +30,12 @@ class JSONDataProvider extends DataProvider{
 		@mkdir(dirname($path), 0777, true);
 		return $path;
 	}
-	public function loadEntity($entity){
+	public function loadEntity($entity, $create = true){
 		$file = $this->getPath($entity);
 		if(!is_file($file)){
+			if(!$create){
+				EntityNotCreatedException::throwEx();
+			}
 			$entity->initDefaultAccounts();
 			return;
 		}

@@ -21,12 +21,16 @@ use xecon\log\MysqliLogProvider;
 use xecon\log\SQLite3LogProvider;
 use xecon\log\Transaction;
 use xecon\provider\DataProvider;
+use xecon\provider\EntityNotCreatedException;
 use xecon\provider\JSONDataProvider;
 use xecon\provider\MysqliDataProvider;
 use xecon\provider\SQLite3DataProvider;
 use xecon\utils\CallbackPluginTask;
 
 class XEcon extends PluginBase implements Listener{
+	const GET_PLAYER_ENT_FAILURE_SUCCESS = 0;
+	const GET_PLAYER_ENT_FAILURE_NOT_LOADED = 1;
+	const GET_PLAYER_ENT_FAILURE_NOT_CREATED = 2;
 	/** @var Session[] $sessions */
 	private $sessions = [];
 	/** @var log\LogProvider */
@@ -221,10 +225,12 @@ class XEcon extends PluginBase implements Listener{
 	}
 	/**
 	 * @param string $name
+	 * @param bool $load
 	 * @param bool $create
+	 * @param int $failureReason
 	 * @return PlayerEnt
 	 */
-	public function getPlayerEnt($name, $create = true){
+	public function getPlayerEnt($name, $load = true, $create = false, &$failureReason = self::GET_PLAYER_ENT_FAILURE_SUCCESS){
 		$this->collectGarbage();
 		if($name instanceof Player){
 			$player = $name;
@@ -233,10 +239,18 @@ class XEcon extends PluginBase implements Listener{
 		$name = strtolower($name);
 		$name = PlayerEnt::ABSOLUTE_PREFIX . "/$name";
 		if(!isset($this->ents[strtolower($name)])){
-			if(!$create){
+			if(!$load){
+				$failureReason = self::GET_PLAYER_ENT_FAILURE_NOT_LOADED;
 				return false;
 			}
-			new PlayerEnt(isset($player) ? $player:$name, $this); // It will automatically register to addEntity() in the constructor
+			try{
+				new PlayerEnt(isset($player) ? $player:$name, $this, $create);
+				// It will automatically register to addEntity() in the constructor
+			}
+			catch(EntityNotCreatedException $e){
+				$failureReason = self::GET_PLAYER_ENT_FAILURE_NOT_CREATED;
+				return false;
+			}
 		}
 		$ent = $this->ents[strtolower($name)]->get();
 		$ent->acquire();

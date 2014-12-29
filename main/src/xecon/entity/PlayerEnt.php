@@ -13,7 +13,7 @@ class PlayerEnt{
 	const ACCOUNT_CASH = "Cash";
 	const ACCOUNT_BANK = "Bank";
 	const ABSOLUTE_PREFIX = "Player";
-	public function __construct($player, XEcon $main){
+	public function __construct($player, XEcon $main, $create = true){
 		if($player instanceof Player){
 			$this->player = new \WeakRef($player);
 			$this->name = $player->getName();
@@ -22,7 +22,7 @@ class PlayerEnt{
 			$this->player = $player;
 			$this->name = $player;
 		}
-		$this->initializeXEconEntity($main);
+		$this->initializeXEconEntity($main, $create);
 	}
 	public function onQuit(){
 		$this->save();

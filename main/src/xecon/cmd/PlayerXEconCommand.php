@@ -11,7 +11,7 @@ abstract class PlayerXEconCommand extends XEconCommand{
 		if(!($sender instanceof Player)){
 			return "Please run this command in-game.";
 		}
-		$ent = $this->getPlugin()->getPlayerEnt($sender->getName());
+		$ent = $this->getPlugin()->getPlayerEnt($sender->getName(), false);
 		return $this->onRun($ent, $sender, $args);
 	}
 	protected abstract function onRun(PlayerEnt $ent, Player $player, array $args);

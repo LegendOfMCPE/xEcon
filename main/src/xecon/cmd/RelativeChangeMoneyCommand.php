@@ -53,7 +53,7 @@ class RelativeChangeMoneyCommand extends XEconCommand{
 			array_shift($args);
 		}
 		if($e){
-			$ent = $this->getPlugin()->getPlayerEnt($name, false);
+			$ent = $this->getPlugin()->getPlayerEnt($name);
 			if(!($ent instanceof PlayerEnt)){
 				return "$name is not registered! If you are using a similar name, don't use '.e'.";
 			}
@@ -63,7 +63,7 @@ class RelativeChangeMoneyCommand extends XEconCommand{
 			if(!($player instanceof Player)){
 				return "$name is not online! Try adding '.e' if the player is offline.";
 			}
-			$ent = $this->getPlugin()->getPlayerEnt($player->getName());
+			$ent = $this->getPlugin()->getPlayerEnt($player->getName(), false);
 			if(!($ent instanceof PlayerEnt)){
 				throw new \RuntimeException("\$ent is not instance of PlayerEnt. Dump of \$ent: " . var_export($ent, true));
 			}

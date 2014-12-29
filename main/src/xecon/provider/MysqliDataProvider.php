@@ -54,13 +54,16 @@ class MysqliDataProvider extends DataProvider{
 				ip VARBINARY(4) PRIMARY KEY
 				);");
 	}
-	public function loadEntity($entity){
+	public function loadEntity($entity, $create = true){
 		$result = $this->db->query("SELECT * FROM {$this->mtn} WHERE
 				ent_type = '{$this->db->escape_string($entity->getAbsolutePrefix())}' AND
 				ent_name = '{$this->db->escape_string($entity->getName())}';");
 		$data = $result->fetch_assoc();
 		$result->close();
 		if(!is_array($data)){
+			if(!$create){
+				EntityNotCreatedException::throwEx();
+			}
 			$entity->initDefaultAccounts();
 			return;
 		}

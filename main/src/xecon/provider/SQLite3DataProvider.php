@@ -43,7 +43,7 @@ class SQLite3DataProvider extends DataProvider{
 				);");
 		$this->db->exec("CREATE TABLE IF NOT EXISTS ips (ip REAL PRIMARY KEY);");
 	}
-	public function loadEntity($entity){
+	public function loadEntity($entity, $create = true){
 		if($this->existsEntity($entity->getAbsolutePrefix(), $entity->getName())){
 			$result = $this->db->query("SELECT * FROM ent_accounts
 					WHERE ent_type = '{$this->db->escapeString($entity->getAbsolutePrefix())}'
@@ -73,6 +73,9 @@ class SQLite3DataProvider extends DataProvider{
 			}
 		}
 		else{
+			if(!$create){
+				EntityNotCreatedException::throwEx();
+			}
 			$entity->initDefaultAccounts();
 		}
 	}
