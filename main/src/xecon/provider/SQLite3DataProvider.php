@@ -12,7 +12,7 @@ class SQLite3DataProvider extends DataProvider{
 	private $db;
 	public function __construct(XEcon $plugin, array $args){
 		parent::__construct($plugin);
-		$this->db = new \SQLite3($plugin->getDataFolder() . $args["path"]);
+		$this->db = new \SQLite3($plugin->getDataFolder() . $args["database path"]);
 		$this->db->exec("CREATE TABLE IF NOT EXISTS ents (
 				ent_type TEXT,
 				ent_name TEXT,
