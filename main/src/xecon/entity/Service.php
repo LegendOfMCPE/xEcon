@@ -16,7 +16,7 @@ class Service{
 		$this->initializeXEconEntity($main);
 	}
 	public function sendMessage($msg, $level = \LogLevel::INFO){
-		$this->getMain()->getLogger()->log($level, $msg);
+		$this->getXEcon()->getLogger()->log($level, $msg);
 	}
 	public function initializeDefaultAccounts(){
 		$bits = PHP_INT_SIZE << 3 - 1;

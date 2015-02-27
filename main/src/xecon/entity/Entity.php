@@ -12,11 +12,11 @@ trait Entity{
 	/** @var Loan[] */
 	private $loans = [];
 	/** @var XEcon */
-	private $_main;
+	private $xecon;
 	protected function initializeXEconEntity(XEcon $main, $create = true){
-		$this->_main = $main;
-		$this->getMain()->getDataProvider()->loadEntity($this, $create);
-		$this->getMain()->addEntity($this);
+		$this->xecon = $main;
+		$this->getXEcon()->getDataProvider()->loadEntity($this, $create);
+		$this->getXEcon()->addEntity($this);
 	}
 	public function getInventory($account){
 		return $this->accounts[$account]->getInventory();
@@ -24,8 +24,8 @@ trait Entity{
 	/**
 	 * @return XEcon
 	 */
-	public function getMain(){
-		return $this->_main;
+	public function getXEcon(){
+		return $this->xecon;
 	}
 	/**
 	 * @param string $name
@@ -61,7 +61,7 @@ trait Entity{
 		return true;
 	}
 	public function delete(){
-		$this->getMain()->getDataProvider()->deleteEntity($this->getUniqueName());
+		$this->getXEcon()->getDataProvider()->deleteEntity($this->getUniqueName());
 	}
 	/**
 	 * @param $name
@@ -87,6 +87,18 @@ trait Entity{
 		}
 		return $balance;
 	}
+	public function calcLiabilities(){
+		$result = 0;
+		foreach($this->accounts as $acc){
+			if($acc->getAmount() < 0){
+				$result -= $acc->getAmount();
+			}
+		}
+		foreach($this->loans as $loan){
+			$result += $loan->getAmount();
+		}
+		return $result;
+	}
 	public function getUniqueName(){
 		return "{$this->getAbsolutePrefix()}/{$this->getName()}";
 	}
@@ -94,7 +106,7 @@ trait Entity{
 	public abstract function getAbsolutePrefix();
 	public abstract function sendMessage($msg);
 	public final function initDefaultAccounts(){
-		$this->getMain()->getLogger()->info("Initializing new economic entity: {$this->getUniqueName()}");
+		$this->getXEcon()->getLogger()->info("Initializing new economic entity: {$this->getUniqueName()}");
 		$this->initializeDefaultAccounts();
 	}
 	protected abstract function initializeDefaultAccounts();
@@ -102,7 +114,7 @@ trait Entity{
 //		$this->save();
 	}
 	public function save(){
-		$this->getMain()->getDataProvider()->saveEntity($this);
+		$this->getXEcon()->getDataProvider()->saveEntity($this);
 	}
 	public function __toString(){
 		return $this->getUniqueName();

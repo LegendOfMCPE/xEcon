@@ -199,7 +199,7 @@ class Account implements InventoryHolder, Transactable{
 		}
 		if($other->add($amount) and $this->take($amount)){ // why did I mess these two up...
 			if($other instanceof Account){
-				$this->getEntity()->getMain()->logTransaction($this, $other, $amount, $detail);
+				$this->getEntity()->getXEcon()->logTransaction($this, $other, $amount, $detail);
 			}
 			return true;
 		}

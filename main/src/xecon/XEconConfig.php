@@ -4,9 +4,11 @@ namespace xecon;
 
 class XEconConfig{
 	/** @var number */
-	private $defaultBank, $defaultCash, $maxBank, $maxCash, $maxOverdraft;
+	private $defaultBank, $defaultCash, $maxBank, $maxCash, $maxOverdraft, $maxLiabilities;
 	/** @var bool */
 	private $defaultForIps;
+	/** @var int */
+	private $minLoanCompoundInterval, $maxLoanCompoundInterval;
 	/** @var array */
 	private $uniMysqlDetails, $dataProvider, $logs;
 	/** @var bool */
@@ -23,7 +25,11 @@ class XEconConfig{
 		$max = $player["max"];
 		$this->maxBank = $max["bank"];
 		$this->maxCash = $max["cash"];
-		$this->maxOverdraft = $player["bank"]["overdraft"];
+		$this->maxLiabilities = $max["liabilities"];
+		$this->maxOverdraft = $player["bank"]["max overdraft"];
+		$loan = $config["loan compound interval"];
+		$this->minLoanCompoundInterval = $loan["minimum"];
+		$this->maxLoanCompoundInterval = $loan["maximum"];
 		$this->defaultForIps = $default["give for each ip"];
 		$this->uniMysqlDetails = $config["universal mysqli database"]["connection details"];
 		$this->dataProvider = $config["data provider"];
@@ -104,5 +110,14 @@ class XEconConfig{
 	 */
 	public function getReportTimeout(){
 		return $this->reportTimeout;
+	}
+	public function getMaxLiabilities(){
+		return $this->maxLiabilities;
+	}
+	public function getMinLoanCompoundInterval(){
+		return $this->minLoanCompoundInterval;
+	}
+	public function getMaxLoanCompoundInterval(){
+		return $this->maxLoanCompoundInterval;
 	}
 }

@@ -178,11 +178,20 @@ class XEcon extends PluginBase implements Listener{
 	public function getMaxCashMoney(){
 		return $this->getXEconConfiguration()->getMaxCash();
 	}
+	public function getMaxLiabilities(){
+		return $this->getXEconConfiguration()->getMaxLiabilities();
+	}
+	public function getMinLoanCompoundInterval(){
+		return $this->getXEconConfiguration()->getMinLoanCompoundInterval();
+	}
+	public function getMaxLoanCompoundInterval(){
+		return $this->getXEconConfiguration()->getMaxLoanCompoundInterval();
+	}
 	public function isDefaultForIps(){
 		return $this->getXEconConfiguration()->isDefaultForIps();
 	}
 	public function onJoin(PlayerJoinEvent $evt){
-		$this->sessions[$evt->getPlayer()->getID()] = new Session($evt->getPlayer(), $this);
+		$this->sessions[self::CID($evt->getPlayer())] = new Session($evt->getPlayer(), $this);
 	}
 	public function onQuit(PlayerQuitEvent $evt){
 		$p = $evt->getPlayer();

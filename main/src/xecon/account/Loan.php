@@ -75,8 +75,17 @@ class Loan implements Transactable{
 	}
 	public function updateInterest(){
 		$now = time();
-		$ratio = ($now - $this->lastInterestUpdate) / 3600;
-		$this->amount *= (1 + $this->increasePerHour) ** $ratio;
+		$diff = $now - $this->lastInterestUpdate;
+		if($diff < $this->getOwner()->getXEcon()->getMinLoanCompoundInterval()){
+			return;
+		}
+		$max = $this->getOwner()->getXEcon()->getMaxLoanCompoundInterval();
+		$net = $diff % $max;
+		$this->amount *= (1 + $this->increasePerHour) ** ($net / 3600);
+		while($diff > 0){
+			$diff -= $max;
+			$this->amount *= (1 + $this->increasePerHour) ** ($max / 3600);
+		}
 		$this->lastInterestUpdate = $now;
 	}
 	public function getInterest(){
