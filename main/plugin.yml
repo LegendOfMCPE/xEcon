@@ -1,7 +1,9 @@
+---
 name: xEcon
 author: LegendOfMCPE
-version: 1.0.0
-api: [1.9.0]
+version: 1.0.0_INDEV004
+api:
+- 1.9.0
 main: xecon\XEcon
 permissions:
   xecon:
@@ -16,13 +18,17 @@ permissions:
               xecon.cmd.see.cash:
                 description: Allows seeing own's cash balance
               xecon.cmd.see.self:
-                description: Allows seeing own's account balances. If set to true, xecon.cmd.see.cash is assumed true.
+                description: Allows seeing own's account balances. If set to true,
+                  xecon.cmd.see.cash is assumed true.
                 default: true
               xecon.cmd.see.players:
-                description: Allows seeing account balances of any players. If set to true, xecon.cmd.see.self is assumed true.
+                description: Allows seeing account balances of any players. If set
+                  to true, xecon.cmd.see.self is assumed true.
                 default: op
               xecon.cmd.see.all:
-                description: Allows seeing account balances of any economic entities (including server services). If set to true, xecon.cmd.see.players is assumed true.
+                description: Allows seeing account balances of any economic entities
+                  (including server services). If set to true, xecon.cmd.see.players
+                  is assumed true.
                 default: op
           xecon.cmd.pay:
             description: Allows using everything in /pay command
@@ -32,7 +38,8 @@ permissions:
                 description: Allows using /pay command to pay cash
                 default: true
               xecon.cmd.pay.bank:
-                description: Allows using /pay command to pay money from bank account to another bank account
+                description: Allows using /pay command to pay money from bank account
+                  to another bank account
                 default: true
           xecon.cmd.bank:
             description: Allows using everything in /bank command
@@ -48,3 +55,4 @@ permissions:
             children:
               xecon.cmd.loan.list:
                 description: Allows viewing own's loan list
+...

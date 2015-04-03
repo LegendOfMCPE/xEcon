@@ -31,6 +31,7 @@ class XEcon extends PluginBase implements Listener{
 	const GET_PLAYER_ENT_FAILURE_SUCCESS = 0;
 	const GET_PLAYER_ENT_FAILURE_NOT_LOADED = 1;
 	const GET_PLAYER_ENT_FAILURE_NOT_CREATED = 2;
+
 	/** @var Session[] $sessions */
 	private $sessions = [];
 	/** @var log\LogProvider */
@@ -45,6 +46,7 @@ class XEcon extends PluginBase implements Listener{
 	private $universalMysqli = null;
 	/** @var XEconConfig */
 	private $xeconConfig;
+
 	public function onEnable(){
 		$this->saveDefaultConfig();
 		$this->xeconConfig = new XEconConfig($this->getConfig()->getAll());
@@ -65,7 +67,8 @@ class XEcon extends PluginBase implements Listener{
 				}
 				else{
 					$details = $data[$name]["connection details"];
-					$db = new \mysqli($details["host"], $details["username"], $details["password"], $details["database"], $details["port"]);
+					/** @noinspection PhpUsageOfSilenceOperatorInspection */
+					$db = @new \mysqli($details["host"], $details["username"], $details["password"], $details["database"], $details["port"]);
 					if($db->connect_error){
 						$this->getLogger()->critical("Unable to connect to core MySQL database! " .
 							"Reason: $db->connect_error");
@@ -93,7 +96,7 @@ class XEcon extends PluginBase implements Listener{
 				}
 				else{
 					$conn = $args["connection details"];
-					$db = new \mysqli($conn["host"], (string) $conn["username"], (string) $conn["password"],
+					$db = @new \mysqli($conn["host"], (string) $conn["username"], (string) $conn["password"],
 							(string) $conn["database"], (int) $conn["port"]);
 					if($db->connect_error){
 						$this->getLogger()->critical(sprintf("Cannot enable xEcon: failed to create " .
@@ -127,7 +130,7 @@ class XEcon extends PluginBase implements Listener{
 	public function getUniversalMysqliDatabase(Plugin $ctx, $disableOnFailure = true){
 		if(!($this->universalMysqli instanceof \mysqli)){
 			$data = $this->getXEconConfiguration()->getUniMysqlDetails();
-			$this->universalMysqli = new \mysqli($data["host"], $data["username"], $data["password"], $data["database"], $data["port"]);
+			$this->universalMysqli = @new \mysqli($data["host"], $data["username"], $data["password"], $data["database"], $data["port"]);
 			if($this->universalMysqli->connect_error){
 				$ctx->getLogger()->critical("Failed to connect to the xEcon universal MySQL database! " .
 					"Reason: {$this->universalMysqli->connect_error}");

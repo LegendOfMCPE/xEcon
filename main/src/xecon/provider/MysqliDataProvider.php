@@ -51,7 +51,7 @@ class MysqliDataProvider extends DataProvider{
 				from_account VARCHAR(255)
 				);");
 		$db->query("CREATE TABLE IF NOT EXISTS {$this->itn} (
-				ip VARBINARY(4) PRIMARY KEY
+				ip VARCHAR(15) PRIMARY KEY
 				);");
 	}
 	public function loadEntity($entity, $create = true){
@@ -157,9 +157,10 @@ EOQ
 );
 	}
 	public function touchIP($ip){
-		$ip = $this->db->escape_string(implode("", array_map(function($token){
-			return chr(intval($token));
-		}, explode(".", $ip))));
+//		$ip = $this->db->escape_string(implode("", array_map(function($token){
+//			return chr(intval($token));
+//		}, explode(".", $ip))));
+		$ip = $this->db->escape_string($ip);
 		$result = $this->db->query("SELECT ip FROM {$this->itn} WHERE ip = '$ip';");
 		$exists = is_array($result->fetch_assoc());
 		$result->close();

@@ -61,6 +61,7 @@ data provider:
 # Configures the logs that log all player transactions
 # Settings are similar to the above settings of MySQLi data provider
 logs:
+  # Options: SQLite3, MySQL
   name: SQLite3
   sqlite3:
     database path: transactions.sq3
@@ -86,11 +87,11 @@ universal mysqli database:
     database: "xEcon"
     port: 3306
 
-### TODO support StatsCore universal database
 
+# The commented settings below are NOT implemented yet
 # Report errors to LegendOfMCPE error tracker
-report errors:
-  enabled: true # whether to report
-  host: pemapmodder.zapto.org/public-hooks/plugin-report.php
-  timeout: 5
+#report errors:
+#  enabled: true # whether to report
+#  host: pemapmodder.zapto.org/public-hooks/plugin-report.php
+#  timeout: 5
 ...

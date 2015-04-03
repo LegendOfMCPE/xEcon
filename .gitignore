@@ -1,3 +1,5 @@
 .idea
 /*.bat
 *.lnk
+/private/
+/_bin/
