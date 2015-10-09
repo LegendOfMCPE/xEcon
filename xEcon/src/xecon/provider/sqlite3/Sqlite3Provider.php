@@ -46,6 +46,6 @@ class Sqlite3Provider implements DataProvider{
 		// TODO
 	}
 	public function loadEntity(EconomicEntity $entity){
-
+// TODO
 	}
 }

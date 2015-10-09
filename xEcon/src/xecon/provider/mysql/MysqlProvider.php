@@ -47,12 +47,14 @@ class MysqlProvider implements DataProvider{
 		$this->init();
 	}
 	private function init(){
+		// TODO
 	}
 
 	public function isInitialized() : bool{
 		return $this->initialized;
 	}
 	public function loadEntity(EconomicEntity $entity){
+		// TODO
 	}
 
 	public function addQuery($query, $onCompletion = null){
