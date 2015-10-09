@@ -1,0 +1,30 @@
+---
+economies:
+  - name: main
+    data-provider:
+      name: sqlite3
+      options:
+        path: main.sq3
+#      name: mysql
+#      options:
+#        connection-details:
+#          host: 127.0.0.1
+#          username: root
+#          password: ""
+#          schema-name: "xecon"
+#        table-prefix: "main_"
+default-economy: main
+
+players:
+  default-accounts:
+    main: # economy name
+      cash:
+        value: 50
+        max-value: 1000
+        min-value: 0
+      bank:
+        value: 1000
+        max-value: 1000000
+        min-value: -1000
+
+...
