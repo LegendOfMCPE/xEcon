@@ -31,18 +31,27 @@ class EconomicEntity{
 	/** @var bool */
 	private $loaded = false;
 
-	public function __construct(XEcon $xEcon, Economy $economy, string $type, string $name){
+	private $defaultAccounts;
+
+	public function __construct(XEcon $xEcon, Economy $economy, string $type, string $name, bool $load = true){
 		$this->xEcon = $xEcon;
 		$this->economy = $economy;
 		$this->type = $type;
 		$this->name = $name;
-		$this->reload();
+		if($load){
+			$this->reload();
+		}
 	}
 	public function reload(){
 		$this->economy->getDataProvider()->loadEntity($this);
 	}
 	public function isLoaded() : bool{
 		return $this->loaded;
+	}
+	public function close(){
+		if($this->loaded){
+			$this->economy->getDataProvider()->saveEntity($this);
+		}
 	}
 	/**
 	 * Returns {@code null} if the entity is not loaded.
@@ -69,11 +78,32 @@ class EconomicEntity{
 	public function getName(){
 		return $this->name;
 	}
+	public function getFullUniqueName(){
+		return $this->economy->getName() . "/" . $this->type . "/" . $this->name;
+	}
 
 	/**
+	 * @param Account[]|null $accounts
 	 * @internal
 	 */
-	public function reloadCallback(){
-
+	public function reloadCallback($accounts){
+		$this->loaded = true;
+		if($accounts === null){
+			$this->accounts = $this->defaultAccounts;
+		}else{
+			$this->accounts = $accounts;
+		}
+	}
+	/**
+	 * @return mixed
+	 */
+	public function getDefaultAccounts(){
+		return $this->defaultAccounts;
+	}
+	/**
+	 * @param Account[] $accounts
+	 */
+	public function setDefaultAccounts(array $accounts){
+		$this->defaultAccounts = $accounts;
 	}
 }

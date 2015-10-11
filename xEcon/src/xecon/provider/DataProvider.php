@@ -19,4 +19,5 @@ use xecon\entity\EconomicEntity;
 
 interface DataProvider{
 	public function loadEntity(EconomicEntity $entity);
+	public function saveEntity(EconomicEntity $entity);
 }

@@ -73,4 +73,7 @@ class MysqlProvider implements DataProvider{
 			}
 		}
 	}
+	public function saveEntity(EconomicEntity $entity){
+		// TODO: Implement saveEntity() method.
+	}
 }

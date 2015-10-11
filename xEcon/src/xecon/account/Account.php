@@ -27,6 +27,14 @@ class Account{
 	/** @var array */
 	private $metadata = [];
 
+	/**
+	 * @param string $name
+	 * @param double $value
+	 * @param double $minValue
+	 * @param double $maxValue
+	 * @param bool $isLoan
+	 * @param array $metadata
+	 */
 	public function __construct(string $name, double $value, double $minValue, double $maxValue, bool $isLoan, array $metadata){
 		$this->name = $name;
 		$this->value = $value;

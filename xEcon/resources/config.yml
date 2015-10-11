@@ -1,7 +1,9 @@
 ---
 economies:
+  '#README': Each economy is run independently from one another. You can assume there is only one economy called main if you don't need to use this new feature.
   - name: main
     data-provider:
+      '#README': xEcon is shipped with two default data providers, namely sqlite3 and mysql. The default options for sqlite3 and mysql are shown as below. Note that each economy has its own data provider.
       name: sqlite3
       options:
         path: main.sq3
@@ -27,4 +29,10 @@ players:
         max-value: 1000000
         min-value: -1000
 
+privacy:
+  auto-report:
+    '#README': You can help us improve xEcon by allowing xEcon to automatically send error reports to the server.
+    enabled: true
+    host: http://pmt.mcpe.me/LegendsOfMCPE/reportError.php
+    scopes: [commands, events, tasks]
 ...

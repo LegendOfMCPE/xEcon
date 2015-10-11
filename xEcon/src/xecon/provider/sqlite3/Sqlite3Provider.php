@@ -48,4 +48,7 @@ class Sqlite3Provider implements DataProvider{
 	public function loadEntity(EconomicEntity $entity){
 // TODO
 	}
+	public function saveEntity(EconomicEntity $entity){
+		// TODO: Implement saveEntity() method.
+	}
 }

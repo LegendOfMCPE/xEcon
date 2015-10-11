@@ -6,4 +6,5 @@ version: 2.0.0_INDEV_0000
 api:
 - 2.0.0
 main: xecon\XEcon
+website: https://github.com/LegendOfMCPE/xEcon
 ...
