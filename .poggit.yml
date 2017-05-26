@@ -5,6 +5,7 @@ projects:
     libs:
       - src: poggit/libasynql/libasynql
         version: ^2.0
+        branch: *
       - src: Falkirks/spoondetector/libasynql
-        version: ^0
+        version: ^0.0
 ...
