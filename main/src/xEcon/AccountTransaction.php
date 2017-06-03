@@ -16,12 +16,15 @@
 namespace xEcon;
 
 class AccountTransaction{
+	// immutable
 	/** @var string */
 	private $fromType;
 	/** @var string */
 	private $fromName;
 	/** @var string */
 	private $fromAccount;
+	/** @var string */
+	private $fromAccountType;
 	/** @var float */
 	private $fromCurrentBalance;
 	/** @var string */
@@ -30,21 +33,27 @@ class AccountTransaction{
 	private $toName;
 	/** @var string */
 	private $toAccount;
+	/** @var string */
+	private $toAccountType;
 	/** @var float */
 	private $toCurrentBalance;
+
+	// mutable
 	/** @var float */
 	private $fromLoss;
 	/** @var float */
 	private $toGain;
 
-	public function __construct(string $fromType, string $fromName, string $fromAccount, float $fromCurrentBalance, string $toType, string $toName, string $toAccount, float $toCurrentBalance, float $fromLoss, float $toGain){
+	public function __construct(string $fromType, string $fromName, string $fromAccount, string $fromAccountType, float $fromCurrentBalance, string $toType, string $toName, string $toAccount, string $toAccountType, float $toCurrentBalance, float $fromLoss, float $toGain){
 		$this->fromType = $fromType;
 		$this->fromName = $fromName;
 		$this->fromAccount = $fromAccount;
+		$this->fromAccountType = $fromAccountType;
 		$this->fromCurrentBalance = $fromCurrentBalance;
 		$this->toType = $toType;
 		$this->toName = $toName;
 		$this->toAccount = $toAccount;
+		$this->toAccountType = $toAccountType;
 		$this->toCurrentBalance = $toCurrentBalance;
 		$this->fromLoss = $fromLoss;
 		$this->toGain = $toGain;
@@ -60,6 +69,10 @@ class AccountTransaction{
 
 	public function getFromAccount() : string{
 		return $this->fromAccount;
+	}
+
+	public function getFromAccountType() : string{
+		return $this->fromAccountType;
 	}
 
 	public function getFromCurrentBalance() : float{
@@ -78,6 +91,10 @@ class AccountTransaction{
 		return $this->toAccount;
 	}
 
+	public function getToAccountType() : string{
+		return $this->toAccountType;
+	}
+
 	public function getToCurrentBalance() : float{
 		return $this->toCurrentBalance;
 	}
@@ -86,12 +103,20 @@ class AccountTransaction{
 		return $this->fromLoss;
 	}
 
+	public function setFromLoss(float $fromLoss){
+		$this->fromLoss = $fromLoss;
+	}
+
 	public function getFromFinalBalance() : float{
 		return $this->fromCurrentBalance - $this->fromLoss;
 	}
 
 	public function getToGain() : float{
 		return $this->toGain;
+	}
+
+	public function setToGain(float $toGain){
+		$this->toGain = $toGain;
 	}
 
 	public function getToFinalBalance() : float{

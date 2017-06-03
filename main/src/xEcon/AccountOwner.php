@@ -43,6 +43,10 @@ final class AccountOwner{
 	// TODO: 1. Store to AccountOwnerCache
 	// TODO: 2. Support multiple account adapters
 
+	public function getPlugin() : xEcon{
+		return $this->xEcon;
+	}
+
 	/**
 	 * Returns the type of this account owner. The type should contain unique identifiers for the plugin declaring this
 	 * type and a human-readable description of what this type is. Account owners of the same type do not need to have
@@ -82,6 +86,9 @@ final class AccountOwner{
 	 */
 	public function setAdapter(AccountOwnerAdapter $adapter = null) : AccountOwner{
 		$this->adapter = $adapter;
+		if($adapter instanceof AccountOwnerAdapter){
+			$adapter->bind($this);
+		}
 		return $this;
 	}
 
@@ -111,7 +118,7 @@ final class AccountOwner{
 	public static function createNew(xEcon $xEcon, string $type, string $name, array $accounts, AccountOwnerAdapter $adapter = null) : AccountOwner{
 		$inst = new AccountOwner($xEcon, $type, $name);
 		$inst->accounts = $accounts;
-		$inst->adapter = $adapter;
+		$inst->setAdapter($adapter);
 		return $inst;
 	}
 

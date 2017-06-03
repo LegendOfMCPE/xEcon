@@ -30,6 +30,13 @@ interface AccountOwnerAdapter{
 	public function isValid() : bool;
 
 	/**
+	 * Bind to an AccountOwner object
+	 *
+	 * @param AccountOwner $owner
+	 */
+	public function bind(AccountOwner $owner);
+
+	/**
 	 * Returns whether the given player is permitted to pay on behalf of this account owner. The provided
 	 * AccountTransaction describes the account to transact from and the account that will be transacted into, as well
 	 * as the amount of money.

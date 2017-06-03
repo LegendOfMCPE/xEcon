@@ -7,28 +7,87 @@ database:
     password: ""
     schema: xecon
     port: 3306
+
 defaultPlayerAccounts:
-  # only A-Z, a-z, 0-9, hyphen and underscore are allowed in account names, with no more than 40 characters
   cash:
     balance: 100
     max: 1000
+    type: cash
   bank:
     balance: 100
     max: 1000
+    type: bank
+  coins:
+    balance: 5
+    max: INF
+    type: coins
+playerAccountTypes:
+  # invisible "root" type:
+    # prependedUnit: ""
+    # appendedUnit: ""
+  # all player account types inherit "root" if "parent" is not specified
+  money:
+    prependedUnit: $
+  cash:
+    parent: money
+  bank:
+    parent: money
+  coins:
+    appendedUnit: " coins"
 exchangeRates:
-  - from: player:cash
-    to: player:bank
-    interest: 0.12
-  - from: player:cash
-    to: player:bank
-    amount: ">=500"
-    interest: 0.11
-  - from: player:cash
-    to: player:bank
-    interest: 0.1
-  - from: bank
-    to: cash
+  - from: xEcon.Player:money
+    to: xEcon.Player:money
+    rate: 0.88 # $1 from std accounts will bring
+    cmd: [deposit, withdraw]
+  - from: xEcon.Player:money
+    to: xEcon.Player:money
+    amount: ">=500" # if multiple rates match the transaction, the one with the highest rate is chosen
+    rate: 0.89
+    cmd: [deposit, withdraw]
+  - from: xEcon.Player:money
+    to: xEcon.Player:money
     amount: ">=1000"
-    interest: 0.1
+    rate: 0.9
+    cmd: [deposit, withdraw]
+  - from: xEcon.Player:cash
+    to: xEcon.Player:cash
+    rate: 1
+    cmd: pay
+  - from: xEcon.Player:coins
+    to: xEcon.Player:money
+    rate: 1000 # 1 coin will give $1000 bank/cash
+    cmd: coins2money
+  # There is no {from: xEcon.Player:money, to: xEcon.Player:coins}, so you can't buy coins with money
+  - from: xEcon.Player:money
+    to: PocketFactions.Faction:capital # this sets up faction money donation
+    rate: 0.99
+    cmd: donate
+  - from: PocketFactions.Faction:capital
+    to: PocketFactions.Faction:power # you can buy 10 faction power with $1 faction capital
+    rate: 10
+    cmd: buypower
+shops:
+  - productType: xEcon.Shops.Item
+    shopType: buy
+    productData:
+      {id: diamond_block, damage: 0 count: 10}
+    price:
+      - value: 1500
+        accountTypes: [xEcon.Player:money]
+      - value: 1200
+        accountTypes: [xEcon.Player:money]
+        amount: ">=10" # the matching price from the same account type with the lowest value will be selected.
+      - value: 1
+        accountTypes: [xEcon.Player:coins]
+  - productType: PocketFactions.LandClaim
+    shopType: rent
+    rentDuration: 7 days
+    productData: {claimType: [blockProtection, entryProtection] ,size: 16x16}
+    price:
+      - value: 100000
+        accountTypes: [PocketFactions.Faction:capital]
+      - value: 90000
+        accountTypes: [PocketFactions.Faction:capital]
+        majorBiome: ocean # you can claim chunks in the ocean biome at a lower cost.
 ...
 

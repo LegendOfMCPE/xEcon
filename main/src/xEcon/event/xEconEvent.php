@@ -13,25 +13,18 @@
  *
 */
 
-namespace xEcon\player;
+namespace xEcon\event;
 
-use pocketmine\event\Listener;
-use xEcon\event\xEconAccountFormatEvent;
+use pocketmine\event\plugin\PluginEvent;
 use xEcon\xEcon;
 
-class PlayerListener implements Listener{
-	// TODO session management
-
-	/** @var xEcon */
-	private $xEcon;
-
+class xEconEvent extends PluginEvent{
 	public function __construct(xEcon $xEcon){
-		$this->xEcon = $xEcon;
+		parent::__construct($xEcon);
 	}
 
-	public function e_formatPlayerAccount(xEconAccountFormatEvent $event){
-		if($event->getOwnerType() === PlayerAccountOwnerAdapter::OWNER_TYPE){
-			
-		}
+	public function getPlugin() : xEcon{
+		/** @noinspection PhpIncompatibleReturnTypeInspection */
+		return parent::getPlugin();
 	}
 }

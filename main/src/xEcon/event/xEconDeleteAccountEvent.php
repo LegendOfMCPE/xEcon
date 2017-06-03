@@ -15,7 +15,7 @@
 
 namespace xEcon\event;
 
-class xEconDeleteAccountEvent{
-
+class xEconDeleteAccountEvent extends xEconAccountEvent{
+	public static $handlerList = null;
 }
 

@@ -15,6 +15,20 @@
 
 namespace xEcon\event;
 
-class xEconTransactionEvent{
+use pocketmine\event\Cancellable;
+use xEcon\AccountTransaction;
+use xEcon\xEcon;
 
+class xEconTransactionEvent extends xEconEvent implements Cancellable{
+	/** @var AccountTransaction */
+	private $transaction;
+
+	public function __construct(xEcon $xEcon, AccountTransaction $transaction){
+		parent::__construct($xEcon);
+		$this->transaction = $transaction;
+	}
+
+	public function getTransaction() : string{
+		return $this->transaction;
+	}
 }
