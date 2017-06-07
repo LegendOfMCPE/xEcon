@@ -13,8 +13,17 @@
  *
 */
 
-namespace xEcon\hormones;
+namespace xecon\modifier;
 
-class DeleteAccountHormone{
+class SprintfCurrencyUnit implements CurrencyUnit{
+	/** @var string */
+	private $format;
 
+	public function __construct(string $format){
+		$this->format = $format;
+	}
+
+	public function format(float $amount) : string{
+		return sprintf($this->format, $amount);
+	}
 }

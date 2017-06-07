@@ -13,9 +13,11 @@
  *
 */
 
-namespace xEcon;
+namespace xecon\utils;
 
-use xEcon\utils\CallbackPluginTask;
+use xecon\account\Account;
+use xecon\account\AccountOwner;
+use xecon\xEcon;
 
 /**
  * Caches AccountOwner instances fetched from the database.
@@ -27,7 +29,7 @@ class AccountOwnerCache{
 	/** @var xEcon */
 	private $xEcon;
 
-	/** @var AccountOwner[] */
+	/** @var \xecon\account\AccountOwner[] */
 	private $store = [];
 	/** @var int[] */
 	private $storeTime;

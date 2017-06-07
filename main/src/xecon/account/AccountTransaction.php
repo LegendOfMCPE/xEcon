@@ -13,7 +13,7 @@
  *
 */
 
-namespace xEcon;
+namespace xecon\account;
 
 class AccountTransaction{
 	// immutable
@@ -23,8 +23,8 @@ class AccountTransaction{
 	private $fromName;
 	/** @var string */
 	private $fromAccount;
-	/** @var string */
-	private $fromAccountType;
+	/** @var string[] */
+	private $fromAccountModifiers = [];
 	/** @var float */
 	private $fromCurrentBalance;
 	/** @var string */
@@ -33,8 +33,8 @@ class AccountTransaction{
 	private $toName;
 	/** @var string */
 	private $toAccount;
-	/** @var string */
-	private $toAccountType;
+	/** @var string[] */
+	private $toAccountModifiers = [];
 	/** @var float */
 	private $toCurrentBalance;
 

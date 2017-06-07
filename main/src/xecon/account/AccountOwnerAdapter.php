@@ -13,7 +13,7 @@
  *
 */
 
-namespace xEcon;
+namespace xecon\account;
 
 use pocketmine\Player;
 
@@ -22,34 +22,35 @@ use pocketmine\Player;
  */
 interface AccountOwnerAdapter{
 	/**
-	 * Returns whether this adapter is still valid, i.e. something in other contexts (e.g. Server context) is connected
-	 * to the account owner. If this returns true, the account owner instance will be de-referenced from the cache.
+	 * Returns whether this adapter is still valid, i.e. something in other contexts, e.g. the player context (the
+	 * player is online), the plugin context (the plugin is enabled) is connected to the account owner. If this returns
+	 * true, the account owner instance will be de-referenced from the cache.
+	 *
+	 * TODO decide: in a plugin that lets players make pawnbrokers, should the adapter for the paying account be declared online?
 	 *
 	 * @return bool
 	 */
 	public function isValid() : bool;
 
 	/**
-	 * Bind to an AccountOwner object
+	 * Bind to an AccountOwner object.
+	 *
+	 * This method should only be called from the AccountOwner class.
 	 *
 	 * @param AccountOwner $owner
 	 */
 	public function bind(AccountOwner $owner);
 
 	/**
-	 * Returns whether the given player is permitted to pay on behalf of this account owner. The provided
-	 * AccountTransaction describes the account to transact from and the account that will be transacted into, as well
-	 * as the amount of money.
+	 * Checks whether the specified player has permission to create payments on behalf of this AccountOwner using the
+	 * given Account.
 	 *
-	 * <code>$transaction->getFromType()</code> and <code>$transaction->getFromName()</code> must be identical to those
-	 * of the account owner behind this adapter.
-	 *
-	 * @param Player             $player
-	 * @param AccountTransaction $transaction
+	 * @param Player  $player
+	 * @param Account $account where $account->getOwner() is the owner that this AccountOwnerAdapter is bound to.
 	 *
 	 * @return bool
 	 */
-	public function testPaymentAccess(Player $player, AccountTransaction $transaction) : bool;
+	public function hasPaymentAccess(Player $player, Account $account) : bool;
 
 	/**
 	 * Notify, through any means, the context behind this adapter, that a transaction has just occurred, and the source
@@ -66,4 +67,13 @@ interface AccountOwnerAdapter{
 	 * @param AccountTransaction $transaction
 	 */
 	public function notifyRecipient(AccountTransaction $transaction);
+
+	/**
+	 * Notify the account owner of a generic message.
+	 *
+	 * TODO: support translations
+	 *
+	 * @param string $message
+	 */
+	public function notify(string $message);
 }

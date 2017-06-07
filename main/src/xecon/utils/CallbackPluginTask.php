@@ -13,7 +13,7 @@
  *
 */
 
-namespace xEcon\utils;
+namespace xecon\utils;
 
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\PluginTask;

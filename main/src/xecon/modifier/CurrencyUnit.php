@@ -13,10 +13,15 @@
  *
 */
 
-namespace xEcon\hormones;
+namespace xecon\modifier;
 
-use pocketmine\event\Listener;
-
-class HormonesAdapter implements Listener{
-
+interface CurrencyUnit{
+	/**
+	 * Express the amount using this unit.
+	 *
+	 * @param float $amount
+	 *
+	 * @return string
+	 */
+	public function format(float $amount) : string;
 }

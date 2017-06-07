@@ -13,7 +13,10 @@
  *
 */
 
-namespace xEcon;
+namespace xecon\account;
+
+use pocketmine\Server;
+use xecon\xEcon;
 
 final class AccountOwner{
 	/** @var xEcon */
@@ -28,8 +31,9 @@ final class AccountOwner{
 	/** @var AccountOwnerAdapter|null */
 	private $adapter = null;
 
-	/** @var bool */
-	private $hasChanges;
+	/** @var string[] */
+	private $newAccounts = [];
+	private $removedAccounts = [];
 
 	private function __construct(xEcon $xEcon, string $type, string $name){
 		$this->xEcon = $xEcon;
@@ -39,18 +43,22 @@ final class AccountOwner{
 		xEcon::validate(mb_strpos($name, Account::PATH_SEPARATOR) === false, "Account owner name must not contain colon");
 		xEcon::validate(mb_strlen($name) <= 70, "Account owner name is too long");
 		$this->name = $name;
+		$xEcon->getAccountOwnerCache()->cache($this);
 	}
+
 	// TODO: 1. Store to AccountOwnerCache
-	// TODO: 2. Support multiple account adapters
 
 	public function getPlugin() : xEcon{
 		return $this->xEcon;
 	}
 
+	public function getServer() : Server{
+		return $this->xEcon->getServer();
+	}
+
 	/**
 	 * Returns the type of this account owner. The type should contain unique identifiers for the plugin declaring this
-	 * type and a human-readable description of what this type is. Account owners of the same type do not need to have
-	 * a consistent type of {@see AccountOwnerAdapter}.
+	 * type and a human-readable description of what this type is.
 	 *
 	 * @return string
 	 */
@@ -75,6 +83,24 @@ final class AccountOwner{
 	 */
 	public function getAccounts() : array{
 		return $this->accounts;
+	}
+
+	public function addAccount(Account $account){
+		$this->accounts[] = $account;
+		$this->newAccounts[$account->getName()] = true;
+	}
+
+	public function removeAccount(string $name){
+		if(isset($this->accounts[$name])){
+			if(isset($this->newAccounts[$name])){
+				unset($this->newAccounts[$name]);
+			}else{
+				$this->removedAccounts[$name] = true;
+			}
+			unset($this->accounts[$name]);
+		}else{
+			throw new \InvalidArgumentException("No such account to delete");
+		}
 	}
 
 	/**
@@ -119,6 +145,9 @@ final class AccountOwner{
 		$inst = new AccountOwner($xEcon, $type, $name);
 		$inst->accounts = $accounts;
 		$inst->setAdapter($adapter);
+		foreach($accounts as $account){
+			$inst->newAccounts[$account->getName()] = true;
+		}
 		return $inst;
 	}
 
@@ -127,30 +156,20 @@ final class AccountOwner{
 	 * @param string                   $type
 	 * @param string                   $name
 	 * @param callable|null            $onSuccess accepts an AccountOwner
-	 * @param callable|null            $onFailure accepts a MysqlException
+	 * @param callable|null            $onFailure accepts an SqlException
 	 * @param AccountOwnerAdapter|null $adapter
 	 */
 	public static function load(xEcon $xEcon, string $type, string $name, callable $onSuccess = null, callable $onFailure = null, AccountOwnerAdapter $adapter = null){
-		$inst = new AccountOwner($xEcon, $type, $name);
-		$inst->setAdapter($adapter);
-		$db = $xEcon->getDatabase();
-		$db->loadAccounts($type, $name, function($accounts) use ($inst, $onSuccess){
-			$inst->accounts = $accounts;
-			$onSuccess($inst);
-		}, $onFailure);
-	}
-
-	public function notifyChanges(){
-		$this->hasChanges = true;
-	}
-
-	public function hasChanges() : bool{
-		return $this->hasChanges;
+		// TODO
 	}
 
 	public function finalize(){
-		if($this->hasChanges()){
-			// TODO save
+		// TODO delete removed accounts
+		// TODO save new accounts
+		foreach($this->accounts as $account){
+			if(!isset($this->newAccounts[$account->getName()])){
+				$account->finalize();
+			}
 		}
 	}
 }

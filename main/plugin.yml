@@ -5,7 +5,16 @@ authors:
 version: 1.0.0-alpha.1
 api:
 - 3.0.0-ALPHA5
-main: xEcon\xEcon
+main: xecon\xEcon
 softdepend:
 - Hormones
 extensions: [mbstring]
+
+permissions:
+  xecon:
+    children:
+      xecon.admin:
+        children:
+          xecon.admin.accctrl:
+            description: Pay using other player's accounts
+            default: op
