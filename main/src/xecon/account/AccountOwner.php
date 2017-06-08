@@ -21,6 +21,8 @@ use xecon\xEcon;
 final class AccountOwner{
 	/** @var xEcon */
 	private $xEcon;
+	/** @var bool */
+	private $loading = true;
 
 	/** @var string */
 	private $type;
@@ -31,9 +33,8 @@ final class AccountOwner{
 	/** @var AccountOwnerAdapter|null */
 	private $adapter = null;
 
-	/** @var string[] */
-	private $newAccounts = [];
-	private $removedAccounts = [];
+	/** @var bool[] */
+	private $newAccounts = [], $removedAccounts = [];
 
 	private function __construct(xEcon $xEcon, string $type, string $name){
 		$this->xEcon = $xEcon;
@@ -46,14 +47,16 @@ final class AccountOwner{
 		$xEcon->getAccountOwnerCache()->cache($this);
 	}
 
-	// TODO: 1. Store to AccountOwnerCache
-
 	public function getPlugin() : xEcon{
 		return $this->xEcon;
 	}
 
 	public function getServer() : Server{
 		return $this->xEcon->getServer();
+	}
+
+	public function isLoading() : bool{
+		return $this->loading;
 	}
 
 	/**
@@ -136,36 +139,28 @@ final class AccountOwner{
 	 * @param xEcon                    $xEcon
 	 * @param string                   $type
 	 * @param string                   $name
-	 * @param Account[]                $accounts
-	 * @param AccountOwnerAdapter|null $adapter
-	 *
-	 * @return AccountOwner
-	 */
-	public static function createNew(xEcon $xEcon, string $type, string $name, array $accounts, AccountOwnerAdapter $adapter = null) : AccountOwner{
-		$inst = new AccountOwner($xEcon, $type, $name);
-		$inst->accounts = $accounts;
-		$inst->setAdapter($adapter);
-		foreach($accounts as $account){
-			$inst->newAccounts[$account->getName()] = true;
-		}
-		return $inst;
-	}
-
-	/**
-	 * @param xEcon                    $xEcon
-	 * @param string                   $type
-	 * @param string                   $name
 	 * @param callable|null            $onSuccess accepts an AccountOwner
-	 * @param callable|null            $onFailure accepts an SqlException
+	 * @param callable|null            $onFailure accepts an \Exception
 	 * @param AccountOwnerAdapter|null $adapter
 	 */
 	public static function load(xEcon $xEcon, string $type, string $name, callable $onSuccess = null, callable $onFailure = null, AccountOwnerAdapter $adapter = null){
-		// TODO
+		$instance = new AccountOwner($xEcon, $type, $name);
+		$xEcon->getDataBase()->loadAccounts($instance, function($accounts) use ($instance, $onSuccess, $adapter){
+			$instance->accounts = $accounts;
+			$instance->setAdapter($adapter);
+			$instance->loading = false;
+			$onSuccess($instance);
+		}, function(\Exception $e) use ($instance, $onFailure){
+			$instance->loading = false;
+			$onFailure($e);
+		});
 	}
 
 	public function finalize(){
-		// TODO delete removed accounts
-		// TODO save new accounts
+		$this->xEcon->getDataBase()->removeAccounts($this->type, $this->name, array_keys($this->removedAccounts));
+		$this->xEcon->getDataBase()->addAccounts(array_map(function($string){
+			return $this->accounts[$string];
+		}, $this->newAccounts));
 		foreach($this->accounts as $account){
 			if(!isset($this->newAccounts[$account->getName()])){
 				$account->finalize();

@@ -44,16 +44,19 @@ class AccountTransaction{
 	/** @var float */
 	private $toGain;
 
-	public function __construct(string $fromType, string $fromName, string $fromAccount, string $fromAccountType, float $fromCurrentBalance, string $toType, string $toName, string $toAccount, string $toAccountType, float $toCurrentBalance, float $fromLoss, float $toGain){
+	public function __construct(
+		string $fromType, string $fromName, string $fromAccount, array $fromAccountModifiers, float $fromCurrentBalance,
+		string $toType, string $toName, string $toAccount, float $toAccountModifiers, float $toCurrentBalance,
+		float $fromLoss, float $toGain){
 		$this->fromType = $fromType;
 		$this->fromName = $fromName;
 		$this->fromAccount = $fromAccount;
-		$this->fromAccountType = $fromAccountType;
+		$this->fromAccountModifiers = $fromAccountModifiers;
 		$this->fromCurrentBalance = $fromCurrentBalance;
 		$this->toType = $toType;
 		$this->toName = $toName;
 		$this->toAccount = $toAccount;
-		$this->toAccountType = $toAccountType;
+		$this->toAccountModifiers = $toAccountModifiers;
 		$this->toCurrentBalance = $toCurrentBalance;
 		$this->fromLoss = $fromLoss;
 		$this->toGain = $toGain;
@@ -71,8 +74,8 @@ class AccountTransaction{
 		return $this->fromAccount;
 	}
 
-	public function getFromAccountType() : string{
-		return $this->fromAccountType;
+	public function getFromAccountModifiers() : string{
+		return $this->fromAccountModifiers;
 	}
 
 	public function getFromCurrentBalance() : float{
@@ -91,8 +94,8 @@ class AccountTransaction{
 		return $this->toAccount;
 	}
 
-	public function getToAccountType() : string{
-		return $this->toAccountType;
+	public function getToAccountModifiers() : array{
+		return $this->toAccountModifiers;
 	}
 
 	public function getToCurrentBalance() : float{

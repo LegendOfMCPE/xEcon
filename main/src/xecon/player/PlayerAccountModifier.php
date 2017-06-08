@@ -45,70 +45,97 @@ class PlayerAccountModifier extends AccountModifier{
 	}
 
 	public function onLoad(){
-		$now = time();
-		$last = $this->getAccount()->getLastFinalize();
-		$margins = $this->getConfig()["margins"];
+		if(isset($this->getConfig()["interest"])){
+			$now = time();
+			$last = $this->getAccount()->getLastFinalize();
+			$balance = $this->getAccount()->getBalance();
 
-		$balance = $this->getAccount()->getBalance();
+			do{
+				$again = $this->compoundInterest($balance, $last, $now);
+				if(isset($this->getConfig()["min"]) && $balance < $this->getConfig()["min"]){
+					// TODO bankrupcy
+					break;
+				}
+			}while($again);
+
+			if($balance != $this->getAccount()->getBalance()){
+				$this->getPlugin()->getLogger()->debug("Balance of {$this->getAccount()->getAbsoluteName()}, gained interest through {$this->getName()}, increased from {$this->getAccount()->getBalance()} to $balance");
+				$this->getAccount()->setBalance($balance);
+			}
+		}
+	}
+
+	public function onFinalize(){
+		if(isset($this->getConfig()["interest"])){
+			$now = time();
+			$last = $this->getAccount()->getLoadTime();
+			$balance = $this->getAccount()->getBalance();
+
+			do{
+				$again = $this->compoundInterest($balance, $last, $now);
+				if(isset($this->getConfig()["min"]) && $balance < $this->getConfig()["min"]){
+					// TODO bankrupcy
+					break;
+				}
+			}while($again);
+
+			if($balance != $this->getAccount()->getBalance()){
+				$this->getPlugin()->getLogger()->debug("Balance of {$this->getAccount()->getAbsoluteName()}, gained interest through {$this->getName()}, increased from {$this->getAccount()->getBalance()} to $balance");
+				$this->getAccount()->setBalance($balance);
+			}
+		}
+	}
+
+	private function compoundInterest(float &$balance, int &$last, int $now) : bool{
+		if($last > $now){
+			throw new \InvalidArgumentException();
+		}
+		if($balance === 0){
+			return false;
+		}
+		$margins = $this->getConfig()["margins"];
 
 		$interestRules = $this->getConfig()["interest"];
 
-		// margin_loop
-		for($i = 0; $i <= count($margins); $i++){
-			assert($last <= $now);
-			$leftMargin = $i === 0 ? -INF : $margins[$i - 1];
-			$rightMargin = $i === count($margins) ? INF : $margins[$i];
-
-			if($leftMargin <= $balance and $balance <= $rightMargin){
-				$bestRule = null;
-				foreach($interestRules as $rule){
-					$if = $rule["if"];
-					if($if($balance)){
-						if($bestRule === null){
-							$bestRule = $rule;
-						}elseif($bestRule["priority"] < $rule){
-							$bestRule = $rule;
-						}
-					}
-				}
-				if($bestRule === null){
-					break; // margin_loop
-				}
-
-				$r = $bestRule["compound"];
-				$n = ((int) ($now / $bestRule["every"])) - ((int) ($last / $bestRule["every"]));
-				$after = $balance * $r ** $n;
-
-				if($leftMargin <= $after && $after <= $rightMargin){
-					// still in this range
-					$balance = $after;
-					break; // margin_loop
-				}else{
-					//             | r > 1 | r < 1
-					// balance > 0 | right | left
-					// balance < 0 | left  | right
-					$tendsTowards = ($r > 1) === ($balance > 0) ? $rightMargin : $leftMargin;
-					$elapsedRounds = (int) ceil(log($tendsTowards / $balance, $r));
-					$balance *= $r ** $elapsedRounds;
-					$last += $bestRule["every"] * $elapsedRounds;
-
-					if($balance < ($this->getConfig()["min"] ?? -INF)){
-						// TODO bankrupcy
-					}
-
-					// in another margin range now, search from the beginning again
-					$i = -1;
-					continue; // margin_loop
-				}
-			}else{
-				// not in this margin range, search in the next range
-				continue; // margin_loop
+		for($i = 1; $i < count($margins); $i++){
+			$leftMargin = $margins[$i - 1];
+			$rightMargin = $margins[$i];
+			if($leftMargin <= $balance && $balance <= $rightMargin){
+				$ok = true;
+				break;
 			}
 		}
+		assert(isset($ok, $leftMargin, $rightMargin), "\$margins should contain -INF and INF and should not be empty");
+		unset($ok);
 
-		if($balance != $this->getAccount()->getBalance()){
-			$this->getPlugin()->getLogger()->debug("Balance of {$this->getAccount()->getAbsoluteName()}, gained interest through {$this->getName()}, increased from {$this->getAccount()->getBalance()} to $balance");
-			$this->getAccount()->setBalance($balance);
+		foreach($interestRules as $rule){
+			$if = $rule["if"];
+			if($if($balance)){
+				$interest = $rule;
+				break;
+			}
+		}
+		if(!isset($interest)){
+			return false; // no interest
+		}
+
+		$r = $interest["compound"];
+		$freq = $interest["every"];
+		$n = ((int) ($now / $freq)) - ((int) ($last / $freq));
+		$after = $balance * $r ** $n;
+
+		if($leftMargin <= $after && $after <= $rightMargin){
+			// still in this range after compounding, so no need to loop
+			$balance = $after;
+			return false;
+		}else{
+			$towardsMargin = ($r > 1) === ($balance > 0) ? $rightMargin : $leftMargin;
+			$elapsedRounds = (int) ceil(log($towardsMargin / $balance, $r));
+			assert($n >= $elapsedRounds); // i.e. $now - $last >= $every * $elapsedRounds
+			$balance *= $r ** $elapsedRounds;
+			$last += $freq * $elapsedRounds;
+			// Now at $last, evaluate more interest till $now
+			return true;
 		}
 	}
 

@@ -15,12 +15,12 @@
 
 namespace xecon\player;
 
-use libasynql\exception\SqlException;
 use pocketmine\Player;
 use xecon\account\Account;
 use xecon\account\AccountOwner;
 use xecon\account\AccountOwnerAdapter;
 use xecon\account\AccountTransaction;
+use xecon\modifier\AccountModifier;
 use xecon\xEcon;
 
 /**
@@ -29,6 +29,8 @@ use xecon\xEcon;
 class PlayerAccountOwnerAdapter implements AccountOwnerAdapter{
 	const TYPE = "player";
 
+	/** @var xEcon */
+	private $xEcon;
 	/** @var Player */
 	private $player;
 	/** @var AccountOwner|void */
@@ -36,18 +38,31 @@ class PlayerAccountOwnerAdapter implements AccountOwnerAdapter{
 
 	public function __construct(xEcon $xEcon, Player $player){
 		$this->player = $player;
-		AccountOwner::load($xEcon, PlayerAccountOwnerAdapter::TYPE, strtolower($player->getName()), function(AccountOwner $owner){
+		$xEcon->loadOrGetOwner(PlayerAccountOwnerAdapter::TYPE, strtolower($player->getName()), function(AccountOwner $owner){
 			if(count($owner->getAccounts()) === 0){
-
+				$config = $this->xEcon->getConfig()->getNested("player.defaultAccounts");
+				foreach($config as $name => $prop){
+					$account = new Account($owner, $name, time(), (float) $prop["balance"]);
+					foreach($prop["modifiers"] as $modifierName){
+						$modifier = AccountModifier::getModifier($account, $modifierName, time());
+						$account->applyModifier($modifier);
+					}
+					$owner->addAccount($account);
+				}
 			}
-		}, function(SqlException $e) use($xEcon, $player){
-			$xEcon->getLogger()->error("Failed to load data for player {$player->getName()}!");
-			$xEcon->getLogger()->logException($e);
 		}, $this);
+		$this->xEcon = $xEcon;
 	}
 
 	public function isValid() : bool{
 		return $this->player->isOnline();
+	}
+
+	/**
+	 * @return AccountOwner|null
+	 */
+	public function getOwner(){
+		return $this->owner ?? null;
 	}
 
 	public function bind(AccountOwner $owner){

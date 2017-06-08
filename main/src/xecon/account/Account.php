@@ -30,22 +30,38 @@ final class Account{
 	private $lastFinalize;
 	/** @var float */
 	private $balance;
-	/** @var AccountModifier[] */
+	/** @var AccountModifier[]|null[] */
 	private $modifiers = [];
 
+	/** @var int */
+	private $loadTime;
 	private $balanceChanged = false;
 	private $removedModifiers = [];
 	private $newModifiers = [];
 
-	public function __construct(AccountOwner $owner, string $name, int $lastFinalize, float $balance, array $modifiers){
+	public function __construct(AccountOwner $owner, string $name, int $lastFinalize, float $balance){
 		$this->owner = $owner;
 		xEcon::validate(mb_strlen($name) <= 40, "Account name is too long");
 		$this->name = $name;
 		$this->lastFinalize = $lastFinalize;
 		$this->balance = $balance;
-		foreach($modifiers as $modifierName){
-			$this->modifiers[$modifierName] = AccountModifier::getModifier($this, $modifierName);
-		}
+		$this->loadTime = time();
+	}
+
+	/**
+	 * @internal Only to be called from Database::loadAccounts()
+	 *
+	 * @param string $modifierName
+	 * @param int    $additionTime
+	 */
+	public function initModifier(string $modifierName, int $additionTime){
+		$this->modifiers[$modifierName] = AccountModifier::getModifier($this, $modifierName, $additionTime);
+	}
+
+	/**
+	 * @internal Only to be called from Database::loadAccounts()
+	 */
+	public function inited(){
 		foreach($this->modifiers as $modifier){
 			$modifier->onLoad();
 		}
@@ -67,8 +83,12 @@ final class Account{
 		return $this->name;
 	}
 
-	public final function getAbsoluteName(){
+	public function getAbsoluteName(){
 		return $this->getOwner()->getType() . Account::PATH_SEPARATOR . $this->getOwner()->getName() . Account::PATH_SEPARATOR . $this->name;
+	}
+
+	public function getLoadTime(){
+		return $this->loadTime;
 	}
 
 	public function getLastFinalize(){
@@ -123,11 +143,12 @@ final class Account{
 	}
 
 	public function finalize(){
-		// TODO check balanceChanged
+		$this->lastFinalize = time();
 		// TODO delete removed modifiers
 		// TODO save new modifiers
 		foreach($this->modifiers as $modifier){
 			$modifier->onFinalize();
 		}
+		// TODO check balanceChanged
 	}
 }

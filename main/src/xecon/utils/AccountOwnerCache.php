@@ -57,7 +57,7 @@ class AccountOwnerCache{
 
 	public function clean(){
 		foreach($this->store as $key => $owner){
-			if(!$owner->hasValidAdapter() and time() - $this->storeTime[$key] > 60){
+			if(!$owner->isLoading() and !$owner->hasValidAdapter() and time() - $this->storeTime[$key] > 60){
 				$owner->finalize();
 				unset($this->store[$key]);
 				unset($this->storeTime[$key]);

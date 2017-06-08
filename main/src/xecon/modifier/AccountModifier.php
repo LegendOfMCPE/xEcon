@@ -33,6 +33,8 @@ abstract class AccountModifier{
 
 	/** @var Account */
 	private $account;
+	/** @var int */
+	private $additionTime;
 	/** @var string */
 	private $modifierName;
 
@@ -53,7 +55,7 @@ abstract class AccountModifier{
 			throw new \InvalidArgumentException("$class does not extend " . AccountModifier::class);
 		}
 		$constructor = $class->getConstructor();
-		if($constructor->getNumberOfRequiredParameters() !== 1 || $constructor->getParameters()[0]->getClass()->getName() !== Account::class){
+		if($constructor->getNumberOfRequiredParameters() !== 3 || $constructor->getParameters()[0]->getClass()->getName() !== Account::class){
 			throw new \InvalidArgumentException("Subclasses of $class should have exactly one required constructor of type " . Account::class);
 		}
 		self::$knownModifiers[$ownerType . Account::PATH_SEPARATOR] = $class;
@@ -63,21 +65,31 @@ abstract class AccountModifier{
 	 * @param Account $account
 	 * @param string  $modifierName
 	 *
-	 * @return AccountModifier|null
+	 * @param int     $additionTime
+	 *
+	 * @return null|AccountModifier
 	 */
-	public static function getModifier(Account $account, string $modifierName){
+	public static function getModifier(Account $account, string $modifierName, int $additionTime){
 		if(isset(self::$knownModifiers[$key = $account->getOwner()->getType() . Account::PATH_SEPARATOR . $modifierName])){
 			$class = self::$knownModifiers[$key];
-			return new $class($account);
+			return new $class($account, $modifierName, $additionTime);
 		}else{
 			return null;
 		}
 	}
 
 
-	public function __construct(Account $account, string $modifierName){
+	public function __construct(Account $account, int $additionTime, string $modifierName){
 		$this->account = $account;
+		$this->additionTime = $additionTime;
 		$this->modifierName = $modifierName;
+	}
+
+	/**
+	 * @internal Do not call this method except from Account::removeModifier().
+	 */
+	public final function invalidate(){
+		unset($this->account);
 	}
 
 	/**
@@ -89,19 +101,16 @@ abstract class AccountModifier{
 		return $this->account;
 	}
 
-	public final function getPlugin():xEcon{
-		return$this->account->getOwner()->getPlugin();
+	public final function getPlugin() : xEcon{
+		return $this->account->getOwner()->getPlugin();
 	}
 
 	public final function getServer() : Server{
 		return $this->account->getOwner()->getPlugin()->getServer();
 	}
 
-	/**
-	 * @internal Do not call this method except from Account::removeModifier().
-	 */
-	public final function invalidate(){
-		unset($this->account);
+	public final function getAdditionTime(){
+		return $this->additionTime;
 	}
 
 	/**
@@ -125,8 +134,6 @@ abstract class AccountModifier{
 	 * Returns the AccountOwner type that this AccountModifier is targetted at
 	 *
 	 * @return string
-	 * @see AccountModifier::registerModifier()
-	 * @see AccountModifier::getModifier()
 	 */
 	public static function getOwnerType() : string{
 		throw new \Error("AccountModifier classes to be registered must implement getOwnerType()");
